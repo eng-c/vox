@@ -194,6 +194,7 @@ fn main() {
     if args.len() < 2 {
         eprintln!("ec v0.1.0");
         eprintln!("Usage: ec <source.en> [options]");
+        eprintln!("By Josjuar Lister 2026");
         eprintln!();
         eprintln!("Options:");
         eprintln!("  --emit-asm       Output assembly only (don't assemble/link)");

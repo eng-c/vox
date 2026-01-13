@@ -5,21 +5,20 @@ BINDIR := $(PREFIX)/bin
 DATADIR := $(PREFIX)/share/ec
 COREDIR := $(DATADIR)/coreasm
 
-
 BIN := ec
-RELEASE_BIN := target/release/$(BIN)
+RELEASE_PATH := target/release
+RELEASE_BIN := $(RELEASE_PATH)/$(BIN)
 
-.PHONY: all build release install uninstall clean
+.PHONY: all build install uninstall clean
 
 all: build
 
-build:
-	cargo build
+build: $(RELEASE_BIN)
 
-release:
+$(RELEASE_BIN): src Cargo.toml
 	cargo build --release
 
-install: release
+install:
 	install -d "$(BINDIR)"
 	install -m 0755 "$(RELEASE_BIN)" "$(BINDIR)/$(BIN)"
 	install -d "$(DATADIR)"

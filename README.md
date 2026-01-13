@@ -38,6 +38,7 @@ cargo build --release
 
 ```bash
 # Install systemwide
+make build
 sudo make install
 
 # Uninstall
@@ -88,4 +89,4 @@ Source (.en) → Lexer → Parser → Analyzer → CodeGen → Assembly (.asm)
 
 ## License
 
-MIT
+GNU General Public License v3.0
