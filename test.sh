@@ -26,8 +26,7 @@ SKIPPED=0
 VERBOSE=0
 TEST_DIR="tests"
 SPECIFIC_FILE=""
-pwd
-ls -R .
+
 # Parse arguments
 while [[ $# -gt 0 ]]; do
     case $1 in
