@@ -202,9 +202,6 @@ impl CodeGenerator {
             if program.uses_strings {
                 result.push_str(&format!("%include \"coreasm/{}/string.asm\"\n", self.target_arch));
             }
-            if program.uses_math {
-                result.push_str(&format!("%include \"coreasm/{}/math.asm\"\n", self.target_arch));
-            }
             if program.uses_args {
                 result.push_str(&format!("%include \"coreasm/{}/args.asm\"\n", self.target_arch));
             }
@@ -1275,6 +1272,76 @@ impl CodeGenerator {
                                     }
                                 }
                         }
+                        FormatPart::Expression { expr, format } => {
+                            // Generate code for the expression, result will be in rax
+                            self.generate_expr(expr);
+                            self.emit_indent("mov rdi, rax");
+                            
+                            // Determine the type of the expression for formatting
+                            let expr_type = self.infer_expr_type(expr);
+                            
+                            // Handle format specifier
+                            match format.as_deref() {
+                                Some(fmt) if fmt.ends_with('x') || fmt.ends_with('X') => {
+                                    // Hex format
+                                    let uppercase = fmt.ends_with('X');
+                                    if uppercase {
+                                        self.emit_indent("PRINT_HEX_UPPER rdi");
+                                    } else {
+                                        self.emit_indent("PRINT_HEX_LOWER rdi");
+                                    }
+                                    self.uses_format = true;
+                                }
+                                Some(fmt) if fmt.ends_with('b') => {
+                                    // Binary format
+                                    self.emit_indent("PRINT_BINARY rdi");
+                                    self.uses_format = true;
+                                }
+                                Some(fmt) if fmt.ends_with('o') => {
+                                    // Octal format
+                                    self.emit_indent("PRINT_OCTAL rdi");
+                                    self.uses_format = true;
+                                }
+                                Some(fmt) if fmt.starts_with('.') => {
+                                    // Precision format for floats: .2, .4, etc.
+                                    let precision: i32 = fmt[1..].parse().unwrap_or(2);
+                                    self.emit_indent("movq xmm0, rdi");
+                                    self.emit_indent(&format!("mov rdi, {}", precision));
+                                    self.emit_indent("call _print_float_precision");
+                                    self.uses_floats = true;
+                                    self.uses_format = true;
+                                }
+                                Some(fmt) if fmt.chars().next().map(|c| c.is_ascii_digit() || c == '0').unwrap_or(false) => {
+                                    // Padding format: 6, 06, etc.
+                                    let zero_pad = fmt.starts_with('0');
+                                    let width: i32 = fmt.trim_start_matches('0').parse().unwrap_or(0);
+                                    if zero_pad && width > 0 {
+                                        self.emit_indent(&format!("PRINT_INT_ZEROPAD rdi, {}", width));
+                                    } else if width > 0 {
+                                        self.emit_indent(&format!("PRINT_INT_PADDED rdi, {}", width));
+                                    } else {
+                                        self.emit_indent("PRINT_INT rdi");
+                                    }
+                                    self.uses_format = true;
+                                }
+                                _ => {
+                                    // Default: print as appropriate type
+                                    match expr_type {
+                                        Some(VarType::Float) => {
+                                            self.emit_indent("movq xmm0, rdi");
+                                            self.emit_indent("PRINT_FLOAT");
+                                            self.uses_floats = true;
+                                        }
+                                        Some(VarType::String) | Some(VarType::Buffer) => {
+                                            self.emit_indent("PRINT_CSTR rdi");
+                                        }
+                                        _ => {
+                                            self.emit_indent("PRINT_INT rdi");
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
                 if !without_newline {
@@ -2298,6 +2365,34 @@ impl CodeGenerator {
                 self.emit_indent("test rax, rax");
                 self.emit_indent(&format!("jz {}", false_label));
             }
+        }
+    }
+    
+    fn infer_expr_type(&self, expr: &Expr) -> Option<VarType> {
+        match expr {
+            Expr::IntegerLit(_) => Some(VarType::Integer),
+            Expr::FloatLit(_) => Some(VarType::Float),
+            Expr::StringLit(_) => Some(VarType::String),
+            Expr::BoolLit(_) => Some(VarType::Integer), // Booleans are integers (0/1)
+            Expr::Identifier(name) => self.variable_types.get(name).cloned(),
+            Expr::BinaryOp { left, op, right } => {
+                // For binary operations, infer based on operator and operand types
+                match op {
+                    BinaryOperator::Add | BinaryOperator::Subtract | 
+                    BinaryOperator::Multiply | BinaryOperator::Divide |
+                    BinaryOperator::Modulo => {
+                        // If either operand is float, result is float
+                        if self.is_float_expr(left) || self.is_float_expr(right) {
+                            Some(VarType::Float)
+                        } else {
+                            Some(VarType::Integer)
+                        }
+                    }
+                    _ => Some(VarType::Integer), // Comparisons and logical ops result in integers
+                }
+            }
+            Expr::UnaryOp { operand, .. } => self.infer_expr_type(operand),
+            _ => Some(VarType::Integer), // Default to integer for complex expressions
         }
     }
 }

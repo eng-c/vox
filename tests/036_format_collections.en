@@ -1,0 +1,33 @@
+(Test format strings with buffers and lists)
+
+(Buffer operations in format strings)
+a buffer called "data" is "Hello".
+a buffer called "more_data" is "World".
+Print "Buffer size: {data's size}".
+Print "Buffer empty: {data's empty}".
+Print "Buffer full: {data's full}".
+Print "Buffer capacity: {data's capacity}".
+
+(List operations in format strings)
+a list called "num_list" is [1, 2, 3, 4, 5].
+a list called "word_list" is ["hello", "world"].
+Print "List size: {num_list's size}".
+Print "List empty: {num_list's empty}".
+Print "List full: {num_list's full}".
+Print "First element: {element 1 of num_list}".
+Print "Last element: {element 5 of num_list}".
+Print "Word count: {word_list's size}".
+Print "First word: {element 1 of word_list}". (Seems to fail here)
+
+(Byte access in format strings)
+a list called "bin_data" is [0x48, 0x65, 0x6c, 0x6c, 0x6f].
+Print "First byte: {bin_data's first}".
+Print "Second byte: {bin_data's second}".
+Print "Third byte: {element 3 of bin_data}".
+Print "Byte sum: {bin_data's first add bin_data's second}".
+Print "Byte hex: {bin_data's first:x}".
+
+(Mixed buffer and arithmetic)
+Print "Size plus 10: {data's size add 10}".
+Print "Size times 2: {num_list's size multiply 2}".
+Print "Byte operations: {element 1 of bin_data multiply element 2 of bin_data}".

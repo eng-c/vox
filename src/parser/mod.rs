@@ -1,6 +1,6 @@
 pub mod ast;
 
-use crate::lexer::{Token, TokenInfo};
+use crate::lexer::{Token, TokenInfo, Lexer};
 use crate::errors::{CompileError, SourceLocation, SourceFile, find_similar_keyword, ENGLISH_KEYWORDS};
 use ast::*;
 
@@ -2500,7 +2500,7 @@ impl Parser {
                     current_literal.clear();
                 }
                 
-                // Parse variable name and optional format
+                // Parse content and optional format
                 let mut var_content = String::new();
                 while let Some(&c) = chars.peek() {
                     if c == '}' {
@@ -2513,17 +2513,36 @@ impl Parser {
                 
                 // Split on : for format spec
                 if let Some(colon_pos) = var_content.find(':') {
-                    let name = var_content[..colon_pos].trim().to_string();
+                    let content = var_content[..colon_pos].trim().to_string();
                     let format = var_content[colon_pos + 1..].trim().to_string();
-                    parts.push(FormatPart::Variable { 
-                        name, 
-                        format: Some(format) 
-                    });
+                    
+                    // Try to parse as expression first
+                    if let Some(expr) = self.try_parse_expression(&content) {
+                        parts.push(FormatPart::Expression { 
+                            expr: Box::new(expr), 
+                            format: Some(format) 
+                        });
+                    } else {
+                        parts.push(FormatPart::Variable { 
+                            name: content, 
+                            format: Some(format) 
+                        });
+                    }
                 } else {
-                    parts.push(FormatPart::Variable { 
-                        name: var_content.trim().to_string(), 
-                        format: None 
-                    });
+                    let content = var_content.trim().to_string();
+                    
+                    // Try to parse as expression first
+                    if let Some(expr) = self.try_parse_expression(&content) {
+                        parts.push(FormatPart::Expression { 
+                            expr: Box::new(expr), 
+                            format: None 
+                        });
+                    } else {
+                        parts.push(FormatPart::Variable { 
+                            name: content, 
+                            format: None 
+                        });
+                    }
                 }
             } else if ch == '}' {
                 // Check for escaped brace }}
@@ -2544,6 +2563,30 @@ impl Parser {
         }
         
         parts
+    }
+    
+    fn try_parse_expression(&self, content: &str) -> Option<Expr> {
+        // Simple heuristic: if it contains spaces, it might be an expression
+        // Single identifiers are likely just variable names
+        if !content.contains(' ') || content.chars().all(|c| c.is_alphanumeric() || c == '_') {
+            return None;
+        }
+        
+        // Try to parse as an English expression
+        let mut lexer = Lexer::new(content);
+        let tokens = lexer.tokenize();
+        let mut parser = Parser::new(tokens);
+        match parser.parse_expression() {
+            Ok(expr) => {
+                // Check if we consumed all tokens (successful parse)
+                if *parser.current() == Token::EOF {
+                    Some(expr)
+                } else {
+                    None
+                }
+            }
+            Err(_) => None,
+        }
     }
     
     fn parse_primary(&mut self) -> Result<Expr, CompileError> {
@@ -2617,7 +2660,7 @@ impl Parser {
                 // Check if this is a format string (contains {variable})
                 if s.contains('{') && !s.starts_with("{{") {
                     let parts = self.parse_format_string(&s);
-                    if !parts.is_empty() && parts.iter().any(|p| matches!(p, FormatPart::Variable { .. })) {
+                    if !parts.is_empty() && parts.iter().any(|p| matches!(p, FormatPart::Variable { .. } | FormatPart::Expression { .. })) {
                         return Ok(Expr::FormatString { parts });
                     }
                 }

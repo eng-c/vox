@@ -1,0 +1,13 @@
+x + y: 8
+x * y: 15
+x - y: 2
+x / y: 1
+a + b * c: 50
+(a + b) * c: 50
+a * b + c: 202
+Circle area: 78.54
+Circle circumference: 31.42
+Square area: 16
+Square perimeter: 16
+Cube volume: 64
+Cube surface area: 96

@@ -1,0 +1,20 @@
+Padded: [    42]
+Zero-pad: [000042]
+Big padded: [    1234]
+Sum padded: [    1276]
+Diff padded: [    1192]
+Left: [123       ]
+Right: [       123]
+Center: [   123    ]
+Expr left: [124       ]
+Expr right: [       246]
+Expr center: [    61    ]
+Decimal: 10
+Hex: 0xa
+Binary: 1010
+Octal: 12
+Sum hex: 0x10
+Diff binary: 0x100
+Product octal: 0o60
+Padded hex: [0x0010]
+Padded binary: [00010000]
