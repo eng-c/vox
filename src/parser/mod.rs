@@ -2672,10 +2672,28 @@ impl Parser {
                     
                     let mut args = Vec::new();
                     loop {
-                        let arg = self.parse_primary()?;
+                        let arg = self.parse_expression()?;
                         args.push(arg);
                         
                         self.skip_noise();
+
+                        if *self.current() == Token::Comma {
+                            self.advance();        // <-- NEW: comma terminates the argument
+                            self.skip_noise();
+                            // do NOT break; comma means “argument ended”, but you might
+                            // still have `and` for another argument OR you might just continue
+                            // parsing the surrounding expression after the call.
+                            // For call-args specifically, comma usually means:
+                            // - end current arg, and continue parsing more args only if "and" follows
+                            if *self.current() == Token::And {
+                                self.advance();
+                                self.skip_noise();
+                                continue;
+                            } else {
+                                break;             // comma used as terminator without "and"
+                            }
+                        }
+                        
                         if *self.current() == Token::And {
                             self.advance();
                             self.skip_noise();

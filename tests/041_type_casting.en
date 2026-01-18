@@ -1,0 +1,62 @@
+(Test type casting and conversions)
+
+(Basic type conversions)
+a number called "num" is 42.
+a float called "flt" is 3.14159.
+a text called "txt" is "123".
+a boolean called "flag" is true.
+
+Print "Number to float: ".
+Print num as a float.
+Print "Float to number: ".
+Print flt as a number.
+Print "Number to text: ".
+Print num as text.
+Print "Text to number: ".
+Print txt as a number.
+Print "Boolean to number: ".
+Print flag as a number.
+Print "Number to boolean: ".
+Print 0 as a boolean.
+Print "Non-zero to boolean: ".
+Print num as a boolean.
+Print "Boolean to text: ".
+Print flag as text.
+Print "Text to boolean: ".
+Print "true" as a boolean.
+
+(Edge cases with casting)
+Print "Float truncation: ".
+Print 3.99 as a number.
+Print "Negative float: ".
+Print -2.7 as a number.
+Print "Zero float: ".
+Print 0.0 as a number.
+Print "Large number to boolean: ".
+Print 999 as a boolean.
+Print "Negative number to boolean: ".
+Print -1 as a boolean.
+
+(Unit conversions with 'in')
+a number called "milliseconds" is 5000.
+Print "5000ms in seconds: ".
+Print milliseconds in seconds.
+Print "5000ms in minutes: ".
+Print milliseconds in minutes.
+
+(Padded text formatting)
+a number called "hour" is 9.
+a number called "minute" is 5.
+Print "Padded hour: ".
+Print hour as text padded to 2.
+Print "Padded minute: ".
+Print minute as text padded to 2.
+
+(Complex casting chain)
+a float called "pi" is 3.14159.
+Print "Pi as number: ".
+Print pi as a number.
+Print "Pi as text: ".
+Print pi as a text.
+Print "Pi text back to number: ".
+Print pi as a text as a number.

@@ -1,0 +1,50 @@
+Weird var: 
+42
+Spaces text: 
+test
+Deep nesting: 
+12
+Should be: 
+2 + (3*4) - (2*3) + 4 = 2 + 12 - 6 + 4 = 12
+10 / 0 (should handle gracefully): 
+0
+0 / 10: 
+0
+Max int + 1: 
+-2147483648
+Min int - 1: 
+2147483647
+true and false: 
+false
+true or false: 
+true
+not true: 
+false
+not false: 
+true
+0 = 0: 
+true
+-1 = 1: 
+false
+0 < -1: 
+false
+-1 > 0: 
+false
+10 % 0: 
+0
+0 % 10: 
+0
+-5 % 3: 
+-2
+5 % -3: 
+2
+Empty list size: 
+0
+Single list size: 
+1
+Single element: 
+42
+Empty buffer size: 
+0
+Empty buffer empty: 
+true

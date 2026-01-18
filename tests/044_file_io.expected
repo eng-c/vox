@@ -1,0 +1,25 @@
+Read from test1: 
+Hello World
+File size: 
+20
+File readable: 
+true
+File writable: 
+false
+Fixed buffer size: 
+10
+Fixed buffer capacity: 
+10
+Fixed buffer full: 
+true
+File not found error handled
+Index out of bounds error handled
+Original: 
+Hello
+First byte: 
+72
+Modified: 
+Jello
+Append test result: 
+First line
+Second line
