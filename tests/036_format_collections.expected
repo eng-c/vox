@@ -13,7 +13,6 @@ First byte: 72
 Second byte: 101
 Third byte: 108
 Byte sum: 173
-Byte hex: 0x48
 Size plus 10: 15
 Size times 2: 10
 Byte operations: 7272

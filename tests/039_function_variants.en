@@ -7,8 +7,8 @@ To "print_separator".
     Print "---".
 
 (Void function with parameters)
-To "greet" with a text called "nam".
-    Print "Hello, {nam}!".
+To "greet" with a text called "_name".
+    Print "Hello, {_name}!".
     Print "Welcome back!".
 
 (Function with no parameters but returns)

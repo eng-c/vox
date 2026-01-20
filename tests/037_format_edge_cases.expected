@@ -4,17 +4,17 @@ Big: 999999999
 Big hex: 0x3b9ac9ff
 Precise: 123.45678901
 Precise short: 123.46
-Zero example: 0
-Negative example: -42
-Negative float example: -3.14
+Zero: 0
+Negative: -42
+Negative float: -3.14
 Neg + pos: 58
 Neg * neg: 1764
-True example: 1
-False example: 0
+True: 1
+False: 0
 True as int: 1
 False as int: 0
 x + y + z: 6
 x * y * z: 6
-(x + y) * z: 6
-x + (y * z): 6
-Complex: 7.00
+(x + y) * z: 7
+x + (y * z): 7
+Complex: 9

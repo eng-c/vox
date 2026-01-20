@@ -15,22 +15,22 @@ Print "Precise: {precise:.8}".
 Print "Precise short: {precise:.2}".
 
 (Zero and negative values)
-a number called "zero example" is 0.
-a number called "negative example" is -42.
-a float called "negative float example" is -3.14.
-Print "Zero: {zero example}".
-Print "Negative: {negative example}".
-Print "Negative float: {negative float example}".
-Print "Neg + pos: {negative example add 100}".
-Print "Neg * neg: {negative example multiply negative example}".
+a number called "zero_example" is 0.
+a number called "negative_example" is -42.
+a float called "negative_float_example" is -3.14.
+Print "Zero: {zero_example}".
+Print "Negative: {negative_example}".
+Print "Negative float: {negative_float_example}".
+Print "Neg + pos: {negative_example add 100}".
+Print "Neg * neg: {negative_example multiply negative_example}".
 
 (Boolean values)
-a boolean called "true example" is true.
-a boolean called "false example" is false.
-Print "True: {true example}".
-Print "False: {false example}".
-Print "True as int: {true example add 0}".
-Print "False as int: {false example add 0}".
+a boolean called "true_example" is true.
+a boolean called "false_example" is false.
+Print "True: {true_example}".
+Print "False: {false_example}".
+Print "True as int: {true_example add 0}".
+Print "False as int: {false_example add 0}".
 
 (Complex nested expressions)
 a number called "x" is 1.
@@ -40,4 +40,4 @@ Print "x + y + z: {x add y add z}".
 Print "x * y * z: {x multiply y multiply z}".
 Print "(x + y) * z: {x add y multiply z}".
 Print "x + (y * z): {x add y multiply z}".
-Print "Complex: {x add y multiply z subtract x multiply y:.2}".
+Print "Complex: {z multiply z add x divide y}".

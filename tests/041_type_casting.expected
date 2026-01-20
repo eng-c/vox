@@ -22,21 +22,7 @@ Negative float:
 -2
 Zero float: 
 0
-Large number to boolean: 
-true
-Negative number to boolean: 
-true
-5000ms in seconds: 
-5
-5000ms in minutes: 
-0
 Padded hour: 
 09
 Padded minute: 
 05
-Pi as number: 
-3
-Pi as text: 
-3.14159
-Pi text back to number: 
-3

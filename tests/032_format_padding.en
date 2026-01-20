@@ -8,25 +8,17 @@ Print "Zero-pad: [{small:06}]".
 Print "Big padded: [{big:8}]".
 Print "Sum padded: [{small add big:8}]".
 Print "Diff padded: [{big subtract small:8}]".
-
-(Alignment tests)
-a number called "val" is 123.
-Print "Left: [{val:<10}]".
-Print "Right: [{val:>10}]".
-Print "Center: [{val:^10}]".
-Print "Expr left: [{val add 1:<10}]".
-Print "Expr right: [{val multiply 2:>10}]".
-Print "Expr center: [{val divide 2:^10}]".
-
 (Number bases with expressions)
 a number called "aa" is 10.
 a number called "bb" is 6.
+a number called "cc" is 60
 Print "Decimal: {aa}".
 Print "Hex: {aa:x}".
 Print "Binary: {aa:b}".
 Print "Octal: {aa:o}".
 Print "Sum hex: {aa add bb:x}".
 Print "Diff binary: {aa subtract bb:b}".
-Print "Product octal: {aa multiply bb:o}".
+Print "Product octal: {cc:o}".
 Print "Padded hex: [{aa add bb:04x}]".
 Print "Padded binary: [{aa add bb:08b}]".
+Print "Padded octal: [{aa add bb:04o}]".

@@ -240,7 +240,7 @@ _print_octal_impl:
     
 .convert_loop:
     test rax, rax
-    jz .print_result
+    jz .add_prefix
     
     mov rcx, rax
     and rcx, 7                  ; get low 3 bits
@@ -250,6 +250,12 @@ _print_octal_impl:
     
     shr rax, 3
     jmp .convert_loop
+    
+.add_prefix:
+    dec rdi
+    mov byte [rdi], 'o'
+    dec rdi
+    mov byte [rdi], '0'
     
 .print_result:
     lea rsi, [_format_buffer + 30]
@@ -510,7 +516,9 @@ _print_float_precision:
     mov rax, r15
     test rax, rax
     jnz .count_digits
-    inc rcx                     ; at least one digit
+    
+    ; Value is 0, so we need precision digits of zeros
+    mov rcx, 0               ; no actual digits in value
     jmp .pad_zeros
     
 .count_digits:

@@ -1620,13 +1620,31 @@ impl CodeGenerator {
             }
             
             Expr::UnaryOp { op, operand } => {
-                self.uses_ints = true;
-                self.generate_expr(operand);
                 match op {
                     UnaryOperator::Negate => {
-                        self.emit_indent("INT_NEG");
+                        // Check operand type to use correct negate operation
+                        match self.infer_expr_type(operand) {
+                            Some(VarType::Float) => {
+                                self.uses_floats = true;
+                                // For float negate, generate operand and handle xmm0/rax properly
+                                self.generate_expr(operand);
+                                // Move result from rax back to xmm0 for negation
+                                self.emit_indent("movq xmm0, rax");
+                                // Apply architecture-specific float negation
+                                self.emit_indent("FLOAT_NEG");
+                                // Move result back to rax for consistency
+                                self.emit_indent("XMM0_TO_RAX");
+                            }
+                            _ => {
+                                self.uses_ints = true;
+                                self.generate_expr(operand);
+                                self.emit_indent("INT_NEG");
+                            }
+                        }
                     }
                     UnaryOperator::Not => {
+                        self.uses_ints = true;
+                        self.generate_expr(operand);
                         self.emit_indent("INT_NOT");
                     }
                 }

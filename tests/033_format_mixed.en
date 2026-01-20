@@ -18,15 +18,15 @@ a number called "diagonal_squared" is width_squared add height_squared.
 Print "Shape: {shape}".
 Print "Area: {width multiply height}".
 Print "Perimeter: {2 multiply width add 2 multiply height}".
-Print "Diagonal approx: {diagonal_squared:.0}".
+Print "Diagonal approx: {diagonal_squared}".
 
 (Multiple expressions in one string)
 a number called "base" is 100.
-a number called "tax" is 8.
-a number called "discount" is 5.
-a number called "tax_amount" is base multiply tax divide 100.
+a number called "tax" is 8.00.
+a number called "discount" is 5.00.
+a number called "tax_amount" is base multiply tax divide 100.00.
 a number called "total" is base add tax_amount.
-a number called "discount_amount" is base multiply discount divide 100.
+a number called "discount_amount" is base multiply discount divide 100.00.
 a number called "final_price" is base subtract discount_amount.
 Print "Base: ${base}, Tax: ${tax_amount:.2}, Total: ${total:.2}".
-Print "With ${discount}% discount: ${final_price:.2}".
+Print "With ${discount:.0}% discount: ${final_price:.2}".

@@ -108,13 +108,6 @@ section .text
     cvttsd2si rax, xmm0
 %endmacro
 
-; Negate float in xmm0
-%macro FLOAT_NEG 0
-    xorpd xmm1, xmm1
-    subsd xmm1, xmm0
-    movsd xmm0, xmm1
-%endmacro
-
 ; Absolute value of float in xmm0
 %macro FLOAT_ABS 0
     ; Clear sign bit (bit 63)
@@ -154,6 +147,11 @@ section .text
 ; Format: X.Y (at least one decimal digit, up to 15 significant digits)
 %macro PRINT_FLOAT 0
     call _print_float
+%endmacro
+
+; Negate float in xmm0 and leave result in xmm0
+%macro FLOAT_NEG 0
+    call _float_negate
 %endmacro
 
 _print_float:
@@ -300,5 +298,18 @@ _pf_print_frac:
     pop r13
     pop r12
     pop rbx
+    leave
+    ret
+
+; Negate float in xmm0 and leave result in xmm0
+_float_negate:
+    push rbp
+    mov rbp, rsp
+    
+    ; Negate by subtracting from zero
+    xorpd xmm1, xmm1      ; xmm1 = 0.0
+    subsd xmm1, xmm0      ; xmm1 = 0.0 - xmm0 = -xmm0
+    movsd xmm0, xmm1      ; xmm0 = -xmm0
+    
     leave
     ret

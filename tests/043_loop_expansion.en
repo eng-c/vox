@@ -14,7 +14,7 @@ Print "Names:".
 print each name from names.
 
 Print "Names with greeting:".
-print "Hello, " each name from names, print "!".
+print "Hello, {each name from names}!".
 
 (Conditional print with multiple but-if clauses)
 Print "FizzBuzz 1-15:".
@@ -26,10 +26,10 @@ print each number from 1 to 15,
 (Inline substitution with treating)
 a list called "files" is ["data.txt", "-", "output.txt"].
 Print "Processing files (treating - as stdin):".
-print "Processing: " each file from files treating "-" as "/dev/stdin".
+print "Processing: {each file from files treating \"-\" as \"/dev/stdin\"}".
 
 (Complex loop expansion with function calls)
-To "process" with a text called "item". Return a text,
+To "process" with a text called "item".
     Return a text, "Processed: {item}".
 
 a list called "items" is ["A", "B", "C"].
@@ -45,4 +45,4 @@ For each number from 1 to 10,
 
 (Multiple actions in loop expansion)
 Print "Multiple actions:".
-print "Item: " each number from 1 to 3, print " squared is ", print the number multiply the number.
+print "Item: {each number from 1 to 3}, squared is {the number multiply the number}."
