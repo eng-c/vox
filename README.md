@@ -1,12 +1,20 @@
 # EC
 
-A compiler that translates English to x86_64 Assembly. By Josjuar Lister 2026
+A minimal compiler that translates constrained English syntax directly into native x86_64 assembly, without a runtime or libc.
+
+## Motivation
+
+EC is an experiment in compiler design and systems programming.
+It explores how far a constrained natural-language syntax can be compiled directly to native assembly without an intermediate runtime, virtual machine, or standard library.
+
+The project is intentionally minimal: no libc, no garbage collector, and no dynamic dispatch. All abstractions are lowered at compile time.
+## Features
 
 ## Overview
 
-`ec` allows you to write programs in natural English sentences, which are then compiled directly to native x86_64 assembly code (with support for more architectures to come).
+It does not attempt free-form natural language understanding.
 
-## Features
+Instead, it uses a deterministic, sentence-based grammar designed to remain readable while compiling predictably to assembly.
 
 - **Natural Language Syntax**: Write code in English sentences
 - **Compiles to Assembly**: Direct compilation to x86_64 NASM assembly
