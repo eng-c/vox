@@ -770,17 +770,11 @@ impl Parser {
         self.expect(&Token::Comma);
         self.skip_noise();
         
-        // Parse body - terminated by paragraph break (after period) or EOF
-        // Paragraph breaks after COMMAS are visual spacing within the sentence
-        // Paragraph breaks after PERIODS end the while statement
-        // Statements within the body are separated by periods or commas
+        // Parse body: comma continues actions, period ends this while statement.
+        // Paragraph breaks are visual spacing and may appear after commas.
         let mut body = Vec::new();
         loop {
             if *self.current() == Token::EOF {
-                break;
-            }
-            if *self.current() == Token::ParagraphBreak {
-                // Paragraph break at start of body parsing = end of while
                 break;
             }
             if !body.is_empty() && self.is_block_terminator() {
@@ -802,23 +796,13 @@ impl Parser {
                     self.skip_noise();
                 }
             } else if *self.current() == Token::Period {
-                // Period - check what follows
                 self.advance();
                 self.skip_noise();
-                // Paragraph break after period ends the while statement
-                if *self.current() == Token::ParagraphBreak {
-                    break;
-                }
-                // Block terminator (Return) ends the while
-                if self.is_block_terminator() {
-                    break;
-                }
-                // EOF ends the while
-                if *self.current() == Token::EOF {
-                    break;
-                }
-                // Otherwise continue parsing more statements
-            } else if *self.current() == Token::ParagraphBreak || *self.current() == Token::EOF {
+                break;
+            } else if *self.current() == Token::ParagraphBreak {
+                self.advance();
+                self.skip_noise();
+            } else if *self.current() == Token::EOF {
                 break;
             }
         }
