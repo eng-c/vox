@@ -17,7 +17,7 @@ a text called "name" is "World".
 If arguments's count is greater than 1 then,
     the name is arguments's first.
 
-Print "Hello, ".
+Print "Hello, {name}!".
 Print the name.
 Print "!".
 
@@ -51,7 +51,8 @@ open a file for reading called stdinput at "/dev/stdin".
 a buffer called "userbuf".
 print "What's your name? ".
 read from stdinput into userbuf.
+a text called username is userbuf.
 print "".
-write "Hi, " to output.
-write userbuf to output.
-write "!" to output.
+write "Hi, {username}!" to output.
+(write userbuf to output.
+write "!" to output.)

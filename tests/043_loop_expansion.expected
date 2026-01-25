@@ -1,0 +1,59 @@
+Numbers 1-5:
+1
+2
+3
+4
+5
+Even numbers 2-10:
+2
+
+4
+
+6
+
+8
+
+10
+Names:
+Alice
+Bob
+Charlie
+Names with greeting:
+Hello Alice
+Hello Bob
+Hello Charlie
+FizzBuzz 1-15:
+1
+2
+Fizz
+4
+Buzz
+Fizz
+7
+8
+Fizz
+Buzz
+11
+Fizz
+13
+14
+FizzBuzz
+Processing files (treating - as stdin):
+Processing: data.txt
+Processing: /dev/stdin
+Processing: output.txt
+Function calls in loop expansion:
+Done: A
+Done: B
+Done: C
+For each with conditional:
+1
+2
+divisible by 3
+4
+5
+divisible by 3
+lucky seven
+8
+divisible by 3
+10

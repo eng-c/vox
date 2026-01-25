@@ -1,0 +1,48 @@
+(Test nested loops and complex control flow)
+
+(Nested for loops with different ranges)
+For each i from 1 to 3,
+    For each j from 1 to 2,
+        Print "i={i}, j={j}".
+
+(While loop with nested for)
+a number called "counter" is 1.
+While counter is less than or equal to 2,
+    Print "Outer loop: counter={counter}",
+    For each k from 1 to 3,
+        Print "  Inner: k={k}".
+    Increment counter.
+
+(Loop with break and continue)
+For each n from 1 to 10,
+    If n is equal to 5 then, break.
+    If n modulo 2 is equal to 0 then, continue.
+    Print "Odd number: {n}".
+
+(Complex conditional with multiple else-if)
+a number called "score" is 85.
+If score is greater than or equal to 90 then,
+    Print "Grade: A".
+But if score is greater than or equal to 80 then,
+    Print "Grade: B".
+But if score is greater than or equal to 70 then,
+    Print "Grade: C".
+But if score is greater than or equal to 60 then,
+    Print "Grade: D".
+Otherwise,
+    Print "Grade: F".
+
+(Test different scores)
+Set score to 95.
+If score is greater than or equal to 90 then,
+    Print "95: A".
+Otherwise, Print "95: Not A".
+
+Set score to 75.
+If score is greater than or equal to 90 then,
+    Print "75: A".
+But if score is greater than or equal to 80 then,
+    Print "75: B".
+But if score is greater than or equal to 70 then,
+    Print "75: C".
+Otherwise, Print "75: Not C".

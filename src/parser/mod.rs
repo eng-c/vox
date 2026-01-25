@@ -1,6 +1,6 @@
 pub mod ast;
 
-use crate::lexer::{Token, TokenInfo};
+use crate::lexer::{Token, TokenInfo, Lexer};
 use crate::errors::{CompileError, SourceLocation, SourceFile, find_similar_keyword, ENGLISH_KEYWORDS};
 use ast::*;
 
@@ -60,6 +60,42 @@ impl Parser {
         let got_str = format!("{:?}", got);
         let msg = format!("Expected {}, got {:?}", expected, got);
         self.make_error_with_suggestion(&msg, &got_str)
+    }
+    
+    /// Creates an error for invalid buffer size specifications
+    pub fn error_invalid_buffer_size(
+        &self,
+        buffer_name: &str,
+        reason: &str,
+        example: &str,
+    ) -> CompileError {
+        self.err(&format!(
+            "Invalid buffer size for \"{}\": {}\n  \
+             Hint: {}\n  \
+             Example: {}",
+            buffer_name, reason, 
+            "Buffer sizes must be positive integer literals for memory safety.",
+            example
+        ))
+    }
+
+    /// Creates an error for expected token mismatches
+    pub fn error_expected_token(&self, expected: &str, actual: &Token) -> CompileError {
+        self.err(&format!(
+            "Expected '{}' but found '{:?}'\n  \
+             Check your syntax and ensure all keywords are spelled correctly.",
+            expected, actual
+        ))
+    }
+
+    /// Emits a warning for uninitialized buffers (zero capacity)
+    pub fn warn_uninitialized_buffer(&self, buffer_name: &str) {
+        eprintln!(
+            "Warning: Buffer \"{}\" declared without size or initializer.\n  \
+             This creates a zero-capacity buffer which may not be useful.\n  \
+             Consider: a buffer called \"{}\" is 1024 bytes.",
+            buffer_name, buffer_name
+        );
     }
     
     /// Check if a token is a reserved keyword and return an error if so.
@@ -530,26 +566,81 @@ impl Parser {
                 
                 self.skip_noise();
                 
-                // Size is now optional - buffers grow dynamically
-                // Accept either just the name, or "is N bytes in size" for backwards compat
-                let size = if self.expect(&Token::Is) {
+                // Parse first, classify second - check for "is" clause
+                if self.expect(&Token::Is) {
                     self.skip_noise();
-                    let s = self.parse_primary()?;
+                    let expr = self.parse_primary()?;
                     self.skip_noise();
-                    self.expect(&Token::Bytes);
-                    self.skip_noise();
-                    if *self.current() == Token::In {
+                    
+                    // Check if this is a size clause (has "bytes" keyword) or an initializer
+                    if *self.current() == Token::Bytes {
+                        // This is a size clause - advance past "bytes"
                         self.advance();
                         self.skip_noise();
-                        self.expect(&Token::Size);
+                        
+                        // Handle optional "in size" suffix
+                        if *self.current() == Token::In {
+                            self.advance();
+                            self.skip_noise();
+                            if !self.expect(&Token::Size) {
+                                return Err(self.error_expected_token("size", self.current()));
+                            }
+                        }
+                        
+                        // Validate that the size expression is a positive integer literal
+                        // This is critical for memory safety - we need compile-time known sizes
+                        match &expr {
+                            Expr::IntegerLit(n) => {
+                                if *n <= 0 {
+                                    return Err(self.error_invalid_buffer_size(
+                                        &name,
+                                        "Buffer size must be a positive integer",
+                                        "a buffer called \"buf\" is 1024 bytes."
+                                    ));
+                                }
+                                // Check for unreasonably large buffer sizes (prevent DoS via memory exhaustion)
+                                const MAX_BUFFER_SIZE: i64 = 1024 * 1024 * 1024; // 1 GB limit
+                                if *n > MAX_BUFFER_SIZE {
+                                    return Err(self.error_invalid_buffer_size(
+                                        &name,
+                                        &format!("Buffer size exceeds maximum allowed ({} bytes)", MAX_BUFFER_SIZE),
+                                        "Consider using smaller buffers or streaming for large data."
+                                    ));
+                                }
+                            }
+                            Expr::Identifier(_var_name) => {
+                                // Allow variable references for size - will be validated at compile time
+                                // This enables patterns like: a buffer called "buf" is config_size bytes.
+                                // The type checker must verify this is a compile-time constant integer
+                            }
+                            _ => {
+                                return Err(self.error_invalid_buffer_size(
+                                    &name,
+                                    "Buffer size must be a numeric literal or constant variable",
+                                    "a buffer called \"buf\" is 1024 bytes."
+                                ));
+                            }
+                        }
+                        
+                        return Ok(Statement::BufferDecl { name, size: expr });
+                    } else {
+                        // No "bytes" keyword - this is an initializer expression
+                        // The buffer will be sized based on the initializer at compile time
+                        return Ok(Statement::VarDecl {
+                            name,
+                            var_type: Some(Type::Buffer),
+                            value: Some(expr),
+                        });
                     }
-                    s
                 } else {
-                    // Default: dynamic buffer (size ignored anyway)
-                    Expr::IntegerLit(0)
-                };
-                
-                return Ok(Statement::BufferDecl { name, size });
+                    // No "is" clause - this is a zero-capacity dynamic buffer
+                    // Emit a warning as this is likely unintentional
+                    self.warn_uninitialized_buffer(&name);
+                    return Ok(Statement::BufferDecl { 
+                        name, 
+                        size: Expr::IntegerLit(0) 
+                    });
+                }
             }
             Token::Timer => {
                 self.advance();
@@ -770,17 +861,11 @@ impl Parser {
         self.expect(&Token::Comma);
         self.skip_noise();
         
-        // Parse body - terminated by paragraph break (after period) or EOF
-        // Paragraph breaks after COMMAS are visual spacing within the sentence
-        // Paragraph breaks after PERIODS end the while statement
-        // Statements within the body are separated by periods or commas
+        // Parse body: comma continues actions, period ends this while statement.
+        // Paragraph breaks are visual spacing and may appear after commas.
         let mut body = Vec::new();
         loop {
             if *self.current() == Token::EOF {
-                break;
-            }
-            if *self.current() == Token::ParagraphBreak {
-                // Paragraph break at start of body parsing = end of while
                 break;
             }
             if !body.is_empty() && self.is_block_terminator() {
@@ -802,23 +887,13 @@ impl Parser {
                     self.skip_noise();
                 }
             } else if *self.current() == Token::Period {
-                // Period - check what follows
                 self.advance();
                 self.skip_noise();
-                // Paragraph break after period ends the while statement
-                if *self.current() == Token::ParagraphBreak {
-                    break;
-                }
-                // Block terminator (Return) ends the while
-                if self.is_block_terminator() {
-                    break;
-                }
-                // EOF ends the while
-                if *self.current() == Token::EOF {
-                    break;
-                }
-                // Otherwise continue parsing more statements
-            } else if *self.current() == Token::ParagraphBreak || *self.current() == Token::EOF {
+                break;
+            } else if *self.current() == Token::ParagraphBreak {
+                self.advance();
+                self.skip_noise();
+            } else if *self.current() == Token::EOF {
                 break;
             }
         }
@@ -866,47 +941,101 @@ impl Parser {
             let start = self.parse_primary()?;
             self.skip_noise();
             
-            self.expect(&Token::To);
-            self.expect(&Token::And);
-            self.skip_noise();
-            
-            let end = self.parse_primary()?;
-            self.skip_noise();
-            self.expect(&Token::Comma);
-            self.skip_noise();
-            
-            // Parse body - terminated by paragraph break or EOF
-            let mut body = Vec::new();
-            loop {
-                if matches!(self.current(), Token::ParagraphBreak | Token::EOF) {
-                    break;
-                }
-                if !body.is_empty() && self.is_block_terminator() {
-                    break;
-                }
-                
-                let stmt = self.parse_statement()?;
-                body.push(stmt);
+            // Check if this is a range (has "to") or a collection iteration
+            if *self.current() == Token::To || matches!(self.current(), Token::Identifier(s) if s == "to") {
+                // Range: from X to Y
+                self.advance(); // consume "to"
                 self.skip_noise();
                 
-                if matches!(self.current(), Token::Period | Token::Comma) {
-                    self.advance();
+                let end = self.parse_primary()?;
+                self.skip_noise();
+                self.expect(&Token::Comma);
+                self.skip_noise();
+                
+                // Parse body - terminated by period (single sentence loop body)
+                let mut body = Vec::new();
+                loop {
+                    if matches!(self.current(), Token::EOF) {
+                        break;
+                    }
+                    
+                    let stmt = self.parse_statement()?;
+                    body.push(stmt);
                     self.skip_noise();
-                    if self.is_block_terminator() || matches!(self.current(), Token::ParagraphBreak | Token::EOF) {
+                    
+                    if *self.current() == Token::Comma {
+                        // Comma continues to next action in same for loop
+                        self.advance();
+                        self.skip_noise();
+                    } else if *self.current() == Token::Period {
+                        // Period ends this for loop's body
+                        self.advance();
+                        self.skip_noise();
+                        break;
+                    } else {
                         break;
                     }
                 }
+                
+                Ok(Statement::ForRange {
+                    variable,
+                    range: Expr::Range {
+                        start: Box::new(start),
+                        end: Box::new(end),
+                        inclusive,
+                    },
+                    body,
+                })
+            } else {
+                // Collection iteration: from <collection>
+                // start is actually the collection
+                let collection = match start {
+                    Expr::StringLit(s) => Expr::Identifier(s),
+                    other => other,
+                };
+                
+                // Check for optional "treating X as Y" clause before the comma
+                let treating = self.try_parse_treating()?;
+                
+                self.expect(&Token::Comma);
+                self.skip_noise();
+                
+                // Parse body - terminated by period
+                let mut body = Vec::new();
+                loop {
+                    if matches!(self.current(), Token::EOF) {
+                        break;
+                    }
+                    
+                    let stmt = self.parse_statement()?;
+                    body.push(stmt);
+                    self.skip_noise();
+                    
+                    if *self.current() == Token::Comma {
+                        self.advance();
+                        self.skip_noise();
+                    } else if *self.current() == Token::Period {
+                        self.advance();
+                        self.skip_noise();
+                        break;
+                    } else {
+                        break;
+                    }
+                }
+                
+                // If treating clause present, wrap variable references in body
+                let body = if let Some((match_val, replacement)) = treating {
+                    self.apply_treating_to_body(body, &variable, match_val, replacement)
+                } else {
+                    body
+                };
+                
+                Ok(Statement::ForEach {
+                    variable,
+                    collection,
+                    body,
+                })
             }
-            
-            Ok(Statement::ForRange {
-                variable,
-                range: Expr::Range {
-                    start: Box::new(start),
-                    end: Box::new(end),
-                    inclusive,
-                },
-                body,
-            })
         } else if *self.current() == Token::In {
             self.advance();
             self.skip_noise();
@@ -920,13 +1049,10 @@ impl Parser {
             self.expect(&Token::Comma);
             self.skip_noise();
             
-            // Parse body - terminated by paragraph break or EOF
+            // Parse body - terminated by period (single sentence loop body)
             let mut body = Vec::new();
             loop {
-                if matches!(self.current(), Token::ParagraphBreak | Token::EOF) {
-                    break;
-                }
-                if !body.is_empty() && self.is_block_terminator() {
+                if matches!(self.current(), Token::EOF) {
                     break;
                 }
                 
@@ -934,12 +1060,17 @@ impl Parser {
                 body.push(stmt);
                 self.skip_noise();
                 
-                if matches!(self.current(), Token::Period | Token::Comma) {
+                if *self.current() == Token::Comma {
+                    // Comma continues to next action in same for loop
                     self.advance();
                     self.skip_noise();
-                    if self.is_block_terminator() || matches!(self.current(), Token::ParagraphBreak | Token::EOF) {
-                        break;
-                    }
+                } else if *self.current() == Token::Period {
+                    // Period ends this for loop's body
+                    self.advance();
+                    self.skip_noise();
+                    break;
+                } else {
+                    break;
                 }
             }
             
@@ -1244,6 +1375,162 @@ impl Parser {
         }
     }
     
+    /// Try to parse optional "treating X as Y" clause.
+    /// Returns Some((match_value, replacement)) if found, None otherwise.
+    fn try_parse_treating(&mut self) -> Result<Option<(Expr, Expr)>, CompileError> {
+        if *self.current() != Token::Treating {
+            return Ok(None);
+        }
+        self.advance();
+        self.skip_noise();
+        
+        // Parse match value (simple: string or identifier only)
+        let match_value = match self.current().clone() {
+            Token::StringLiteral(s) => { self.advance(); Expr::StringLit(s) }
+            Token::Identifier(n) => { self.advance(); Expr::Identifier(n) }
+            _ => return Err(self.err(
+                "Missing match value after 'treating'\n  \
+                 Syntax: treating <match> as <replacement>\n  \
+                 Example: treating \"-\" as \"/dev/stdin\""
+            )),
+        };
+        self.skip_noise();
+        
+        // Expect "as"
+        let has_as = if *self.current() == Token::As {
+            self.advance();
+            self.skip_noise();
+            true
+        } else if let Token::Identifier(s) = self.current() {
+            if s.to_lowercase() == "as" {
+                self.advance();
+                self.skip_noise();
+                true
+            } else {
+                false
+            }
+        } else {
+            false
+        };
+        
+        if !has_as {
+            return Err(self.err(&format!(
+                "Missing 'as' after 'treating {:?}'\n  \
+                 Syntax: treating <match> as <replacement>\n  \
+                 Example: treating \"-\" as \"/dev/stdin\"",
+                match_value
+            )));
+        }
+        
+        // Parse replacement (simple: string or identifier only)
+        let replacement = match self.current().clone() {
+            Token::StringLiteral(s) => { self.advance(); Expr::StringLit(s) }
+            Token::Identifier(n) => { self.advance(); Expr::Identifier(n) }
+            _ => return Err(self.err(
+                "Missing replacement value after 'as'\n  \
+                 Syntax: treating <match> as <replacement>\n  \
+                 Example: treating \"-\" as \"/dev/stdin\""
+            )),
+        };
+        self.skip_noise();
+        
+        Ok(Some((match_value, replacement)))
+    }
+    
+    /// Apply treating substitution to all references of a variable in a statement body.
+    /// Wraps Identifier references to the variable with TreatingAs expressions.
+    fn apply_treating_to_body(&self, body: Vec<Statement>, variable: &str, match_val: Expr, replacement: Expr) -> Vec<Statement> {
+        body.into_iter().map(|stmt| {
+            self.apply_treating_to_statement(stmt, variable, &match_val, &replacement)
+        }).collect()
+    }
+    
+    fn apply_treating_to_statement(&self, stmt: Statement, variable: &str, match_val: &Expr, replacement: &Expr) -> Statement {
+        match stmt {
+            Statement::Print { value, without_newline } => {
+                Statement::Print {
+                    value: self.apply_treating_to_expr(value, variable, match_val, replacement),
+                    without_newline,
+                }
+            }
+            Statement::If { condition, then_block, else_if_blocks, else_block } => {
+                Statement::If {
+                    condition: self.apply_treating_to_expr(condition, variable, match_val, replacement),
+                    then_block: self.apply_treating_to_body(then_block, variable, match_val.clone(), replacement.clone()),
+                    else_if_blocks: else_if_blocks.into_iter().map(|(cond, block)| {
+                        (self.apply_treating_to_expr(cond, variable, match_val, replacement),
+                         self.apply_treating_to_body(block, variable, match_val.clone(), replacement.clone()))
+                    }).collect(),
+                    else_block: else_block.map(|b| self.apply_treating_to_body(b, variable, match_val.clone(), replacement.clone())),
+                }
+            }
+            Statement::Assignment { name, value } => {
+                Statement::Assignment {
+                    name,
+                    value: self.apply_treating_to_expr(value, variable, match_val, replacement),
+                }
+            }
+            Statement::FunctionCall { name, args } => {
+                Statement::FunctionCall {
+                    name,
+                    args: args.into_iter().map(|a| self.apply_treating_to_expr(a, variable, match_val, replacement)).collect(),
+                }
+            }
+            Statement::FileWrite { file, value } => {
+                Statement::FileWrite {
+                    file,
+                    value: self.apply_treating_to_expr(value, variable, match_val, replacement),
+                }
+            }
+            other => other,
+        }
+    }
+    
+    fn apply_treating_to_expr(&self, expr: Expr, variable: &str, match_val: &Expr, replacement: &Expr) -> Expr {
+        match expr {
+            Expr::Identifier(ref name) if name == variable => {
+                Expr::TreatingAs {
+                    value: Box::new(expr),
+                    match_value: Box::new(match_val.clone()),
+                    replacement: Box::new(replacement.clone()),
+                }
+            }
+            Expr::FormatString { parts } => {
+                Expr::FormatString {
+                    parts: parts.into_iter().map(|part| {
+                        match part {
+                            FormatPart::Expression { expr, format } => {
+                                FormatPart::Expression {
+                                    expr: Box::new(self.apply_treating_to_expr(*expr, variable, match_val, replacement)),
+                                    format,
+                                }
+                            }
+                            FormatPart::Variable { name, format } if name == variable => {
+                                FormatPart::Expression {
+                                    expr: Box::new(Expr::TreatingAs {
+                                        value: Box::new(Expr::Identifier(name)),
+                                        match_value: Box::new(match_val.clone()),
+                                        replacement: Box::new(replacement.clone()),
+                                    }),
+                                    format,
+                                }
+                            }
+                            other => other,
+                        }
+                    }).collect()
+                }
+            }
+            Expr::BinaryOp { left, op, right } => {
+                Expr::BinaryOp {
+                    left: Box::new(self.apply_treating_to_expr(*left, variable, match_val, replacement)),
+                    op,
+                    right: Box::new(self.apply_treating_to_expr(*right, variable, match_val, replacement)),
+                }
+            }
+            other => other,
+        }
+    }
+    
     /// Try to parse "each <variable> from <collection> [treating X as Y]" pattern.
     /// Returns Some((variable, collection, optional_treating)) if found.
     /// This is the universal loop expansion syntax that works with any action.
@@ -1304,64 +1591,7 @@ impl Parser {
         self.skip_noise();
         
         // Check for optional "treating X as Y" clause
-        let treating = if *self.current() == Token::Treating {
-            self.advance();
-            self.skip_noise();
-            
-            // Parse match value (simple: string or identifier only)
-            let match_value = match self.current().clone() {
-                Token::StringLiteral(s) => { self.advance(); Expr::StringLit(s) }
-                Token::Identifier(n) => { self.advance(); Expr::Identifier(n) }
-                _ => return Err(self.err(
-                    "Missing match value after 'treating'\n  \
-                     Syntax: treating <match> as <replacement>\n  \
-                     Example: treating \"-\" as \"/dev/stdin\""
-                )),
-            };
-            self.skip_noise();
-            
-            // Expect "as"
-            let has_as = if *self.current() == Token::As {
-                self.advance();
-                self.skip_noise();
-                true
-            } else if let Token::Identifier(s) = self.current() {
-                if s.to_lowercase() == "as" {
-                    self.advance();
-                    self.skip_noise();
-                    true
-                } else {
-                    false
-                }
-            } else {
-                false
-            };
-            
-            if !has_as {
-                return Err(self.err(&format!(
-                    "Missing 'as' after 'treating {:?}'\n  \
-                     Syntax: treating <match> as <replacement>\n  \
-                     Example: treating \"-\" as \"/dev/stdin\"",
-                    match_value
-                )));
-            }
-            
-            // Parse replacement (simple: string or identifier only)
-            let replacement = match self.current().clone() {
-                Token::StringLiteral(s) => { self.advance(); Expr::StringLit(s) }
-                Token::Identifier(n) => { self.advance(); Expr::Identifier(n) }
-                _ => return Err(self.err(
-                    "Missing replacement value after 'as'\n  \
-                     Syntax: treating <match> as <replacement>\n  \
-                     Example: treating \"-\" as \"/dev/stdin\""
-                )),
-            };
-            self.skip_noise();
-            
-            Some((match_value, replacement))
-        } else {
-            None
-        };
+        let treating = self.try_parse_treating()?;
         
         Ok(Some((variable, collection, treating)))
     }
@@ -2500,29 +2730,39 @@ impl Parser {
                     current_literal.clear();
                 }
                 
-                // Parse variable name and optional format
-                let mut var_content = String::new();
+                // Parse content until closing brace
+                let mut placeholder_content = String::new();
                 while let Some(&c) = chars.peek() {
                     if c == '}' {
                         chars.next();
                         break;
                     }
-                    var_content.push(c);
+                    placeholder_content.push(c);
                     chars.next();
                 }
                 
-                // Split on : for format spec
-                if let Some(colon_pos) = var_content.find(':') {
-                    let name = var_content[..colon_pos].trim().to_string();
-                    let format = var_content[colon_pos + 1..].trim().to_string();
-                    parts.push(FormatPart::Variable { 
-                        name, 
-                        format: Some(format) 
+                // Split on first : to separate variable/expression from format spec
+                // The format spec is preserved exactly as written, with no interpretation
+                let (content, format) = if let Some(colon_pos) = placeholder_content.find(':') {
+                    let content = placeholder_content[..colon_pos].trim().to_string();
+                    // Preserve format spec verbatim - no trimming, no interpretation
+                    let format = placeholder_content[colon_pos + 1..].to_string();
+                    (content, Some(format))
+                } else {
+                    (placeholder_content.trim().to_string(), None)
+                };
+                
+                // Determine if content is an expression or a simple variable name
+                // The format spec (if any) is attached verbatim without any parsing
+                if let Some(expr) = self.try_parse_expression(&content) {
+                    parts.push(FormatPart::Expression { 
+                        expr: Box::new(expr), 
+                        format 
                     });
                 } else {
                     parts.push(FormatPart::Variable { 
-                        name: var_content.trim().to_string(), 
-                        format: None 
+                        name: content, 
+                        format 
                     });
                 }
             } else if ch == '}' {
@@ -2544,6 +2784,31 @@ impl Parser {
         }
         
         parts
+    }
+    
+    fn try_parse_expression(&self, content: &str) -> Option<Expr> {
+        // Simple heuristic: if it contains spaces, it might be an expression
+        // Single identifiers are likely just variable names
+        if !content.contains(' ') || content.chars().all(|c| c.is_alphanumeric() || c == '_') {
+            return None;
+        }
+        
+        // Try to parse as an English expression (including comparisons)
+        let mut lexer = Lexer::new(content);
+        let tokens = lexer.tokenize();
+        let mut parser = Parser::new(tokens);
+        // Use parse_and_expr to handle comparisons like "0 is equal to 0"
+        match parser.parse_and_expr() {
+            Ok(expr) => {
+                // Check if we consumed all tokens (successful parse)
+                if *parser.current() == Token::EOF {
+                    Some(expr)
+                } else {
+                    None
+                }
+            }
+            Err(_) => None,
+        }
     }
     
     fn parse_primary(&mut self) -> Result<Expr, CompileError> {
@@ -2617,7 +2882,7 @@ impl Parser {
                 // Check if this is a format string (contains {variable})
                 if s.contains('{') && !s.starts_with("{{") {
                     let parts = self.parse_format_string(&s);
-                    if !parts.is_empty() && parts.iter().any(|p| matches!(p, FormatPart::Variable { .. })) {
+                    if !parts.is_empty() && parts.iter().any(|p| matches!(p, FormatPart::Variable { .. } | FormatPart::Expression { .. })) {
                         return Ok(Expr::FormatString { parts });
                     }
                 }
@@ -2629,10 +2894,28 @@ impl Parser {
                     
                     let mut args = Vec::new();
                     loop {
-                        let arg = self.parse_primary()?;
+                        let arg = self.parse_expression()?;
                         args.push(arg);
                         
                         self.skip_noise();
+
+                        if *self.current() == Token::Comma {
+                            self.advance();        // <-- NEW: comma terminates the argument
+                            self.skip_noise();
+                            // do NOT break; comma means “argument ended”, but you might
+                            // still have `and` for another argument OR you might just continue
+                            // parsing the surrounding expression after the call.
+                            // For call-args specifically, comma usually means:
+                            // - end current arg, and continue parsing more args only if "and" follows
+                            if *self.current() == Token::And {
+                                self.advance();
+                                self.skip_noise();
+                                continue;
+                            } else {
+                                break;             // comma used as terminator without "and"
+                            }
+                        }
+                        
                         if *self.current() == Token::And {
                             self.advance();
                             self.skip_noise();
@@ -3403,5 +3686,158 @@ impl Parser {
         }
         
         Err(self.err("Expected 'current time into <name>' after 'get'"))
+    }
+}
+
+// ========================================================================
+// Unit Tests for Buffer Declarations
+// ========================================================================
+
+#[cfg(test)]
+mod buffer_declaration_tests {
+    use super::*;
+    use crate::lexer::Lexer;
+
+    fn parse_input(input: &str) -> Result<Program, CompileError> {
+        let mut lexer = Lexer::new(input);
+        let tokens = lexer.tokenize();
+        let mut parser = Parser::new(tokens);
+        parser.parse()
+    }
+
+    #[test]
+    fn test_buffer_with_string_initializer() {
+        let input = r#"a buffer called "byte_buf" is "Hello"."#;
+        let result = parse_input(input);
+        assert!(result.is_ok());
+        let program = result.unwrap();
+        assert_eq!(program.statements.len(), 1);
+        match &program.statements[0] {
+            Statement::VarDecl { name, var_type, value } => {
+                assert_eq!(name, "byte_buf");
+                assert_eq!(var_type, &Some(Type::Buffer));
+                assert!(matches!(value, Some(Expr::StringLit(_))));
+            }
+            _ => panic!("Expected VarDecl for buffer with initializer"),
+        }
+    }
+
+    #[test]
+    fn test_buffer_with_size_clause() {
+        let input = r#"a buffer called "log" is 2048 bytes."#;
+        let result = parse_input(input);
+        assert!(result.is_ok());
+        let program = result.unwrap();
+        assert_eq!(program.statements.len(), 1);
+        match &program.statements[0] {
+            Statement::BufferDecl { name, size } => {
+                assert_eq!(name, "log");
+                assert!(matches!(size, Expr::IntegerLit(2048)));
+            }
+            _ => panic!("Expected BufferDecl for buffer with size"),
+        }
+    }
+
+    #[test]
+    fn test_buffer_with_size_in_size_suffix() {
+        let input = r#"a buffer called "buf" is 1024 bytes in size."#;
+        let result = parse_input(input);
+        assert!(result.is_ok());
+        let program = result.unwrap();
+        assert_eq!(program.statements.len(), 1);
+        match &program.statements[0] {
+            Statement::BufferDecl { name, size } => {
+                assert_eq!(name, "buf");
+                assert!(matches!(size, Expr::IntegerLit(1024)));
+            }
+            _ => panic!("Expected BufferDecl for buffer with size in size"),
+        }
+    }
+
+    #[test]
+    fn test_buffer_non_numeric_size_error() {
+        let input = r#"a buffer called "bad" is "Hello" bytes."#;
+        let result = parse_input(input);
+        assert!(result.is_err());
+        let err = result.unwrap_err();
+        assert!(err.to_string().contains("numeric literal"));
+    }
+
+    #[test]
+    fn test_buffer_negative_size_error() {
+        let input = r#"a buffer called "bad" is -100 bytes."#;
+        let result = parse_input(input);
+        assert!(result.is_err());
+        let err = result.unwrap_err();
+        assert!(err.to_string().contains("positive integer"));
+    }
+
+    #[test]
+    fn test_buffer_zero_size_error() {
+        let input = r#"a buffer called "bad" is 0 bytes."#;
+        let result = parse_input(input);
+        assert!(result.is_err());
+        let err = result.unwrap_err();
+        assert!(err.to_string().contains("positive integer"));
+    }
+
+    #[test]
+    fn test_buffer_excessive_size_error() {
+        let input = r#"a buffer called "huge" is 9999999999999 bytes."#;
+        let result = parse_input(input);
+        assert!(result.is_err());
+        let err = result.unwrap_err();
+        assert!(err.to_string().contains("exceeds maximum"));
+    }
+
+    #[test]
+    fn test_buffer_with_variable_size() {
+        let input = r#"a buffer called "dynamic" is config_size bytes."#;
+        let result = parse_input(input);
+        assert!(result.is_ok());
+        let program = result.unwrap();
+        assert_eq!(program.statements.len(), 1);
+        match &program.statements[0] {
+            Statement::BufferDecl { name, size } => {
+                assert_eq!(name, "dynamic");
+                assert!(matches!(size, Expr::Identifier(_)));
+            }
+            _ => panic!("Expected BufferDecl for buffer with variable size"),
+        }
+    }
+
+    #[test]
+    fn test_buffer_with_numeric_initializer() {
+        // Without "bytes" keyword, this should be an initializer, not a size
+        let input = r#"a buffer called "data" is 42."#;
+        let result = parse_input(input);
+        assert!(result.is_ok());
+        let program = result.unwrap();
+        assert_eq!(program.statements.len(), 1);
+        match &program.statements[0] {
+            Statement::VarDecl { name, var_type, value } => {
+                assert_eq!(name, "data");
+                assert_eq!(var_type, &Some(Type::Buffer));
+                assert!(matches!(value, Some(Expr::IntegerLit(42))));
+            }
+            _ => panic!("Expected VarDecl for buffer with numeric initializer"),
+        }
+    }
+
+    #[test]
+    fn test_buffer_without_initializer_warning() {
+        let input = r#"a buffer called "empty_buf"."#;
+        let result = parse_input(input);
+        assert!(result.is_ok());
+        let program = result.unwrap();
+        assert_eq!(program.statements.len(), 1);
+        match &program.statements[0] {
+            Statement::BufferDecl { name, size } => {
+                assert_eq!(name, "empty_buf");
+                assert!(matches!(size, Expr::IntegerLit(0)));
+            }
+            _ => panic!("Expected BufferDecl for uninitialized buffer"),
+        }
+        // Note: Warning should be emitted to stderr during parsing
     }
 }

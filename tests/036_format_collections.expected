@@ -1,0 +1,18 @@
+Buffer size: 5
+Buffer empty: 0
+Buffer full: 0
+Buffer capacity: 4096
+List size: 5
+List empty: 0
+List full: 0
+First element: 1
+Last element: 5
+Word count: 3
+First word: apple
+First byte: 72
+Second byte: 101
+Third byte: 108
+Byte sum: 173
+Size plus 10: 15
+Size times 2: 10
+Byte operations: 7272

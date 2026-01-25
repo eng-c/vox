@@ -1,0 +1,23 @@
+(Test type casting and conversions)
+
+(Float to integer truncation - this works)
+Print "Float truncation: ".
+Print 3.99 as a number.
+Print "Negative float: ".
+Print -2.7 as a number.
+Print "Zero float: ".
+Print 0.0 as a number.
+
+(Boolean conversion)
+Print "Zero to boolean: ".
+Print 0 as a boolean.
+Print "Non-zero to boolean: ".
+Print 42 as a boolean.
+
+(Padded text formatting)
+a number called "that hour" is 9.
+a number called "that minute" is 5.
+Print "Padded hour: ".
+Print "{that hour:02}".
+Print "Padded minute: ".
+Print "{that minute:02}".

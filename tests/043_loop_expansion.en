@@ -1,0 +1,49 @@
+(Test loop expansion and advanced features)
+
+(Loop expansion with ranges)
+Print "Numbers 1-5:".
+print each number from 1 to 5.
+
+Print "Even numbers 2-10:".
+print each number from 2 to 10,
+    but if the number modulo 2 is equal to 1 print "".
+
+(Loop expansion with lists)
+a list called "names" is ["Alice", "Bob", "Charlie"].
+Print "Names:".
+print each name from names.
+
+Print "Names with greeting:".
+for each person from names,
+    print "Hello {person}"
+
+(Conditional print with multiple but-if clauses)
+Print "FizzBuzz 1-15:".
+print each number from 1 to 15,
+    but if the number modulo 15 is equal to 0 print "FizzBuzz",
+    but if the number modulo 3 is equal to 0 print "Fizz",
+    but if the number modulo 5 is equal to 0 print "Buzz".
+
+(Inline substitution with treating)
+a list called "files" is ["data.txt", "-", "output.txt"].
+Print "Processing files (treating - as stdin):".
+for each filename from files treating "-" as "/dev/stdin",
+    print "Processing: {filename}".
+
+(Complex loop expansion with function calls)
+To "process" with a text called "item".
+    Return a text, "Processed: {item}".
+
+a list called "items" is ["A", "B", "C"].
+Print "Function calls in loop expansion:".
+for each result from items,
+    print "Done: {result}".
+
+(For each loop with but-if)
+Print "For each with conditional:".
+For each number from 1 to 10,
+    Print the number,
+        but if the number modulo 3 is equal to 0 print "divisible by 3",
+        but if the number is 7 print "lucky seven".
+
+

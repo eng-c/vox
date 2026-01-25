@@ -7,8 +7,8 @@ pub struct Dependencies {
     pub uses_io: bool,
     pub uses_heap: bool,
     pub uses_strings: bool,
-    pub uses_math: bool,
     pub uses_args: bool,
+    pub uses_funcs: bool,
 }
 
 pub struct Analyzer {
@@ -49,7 +49,6 @@ impl Analyzer {
         program.uses_io = self.deps.uses_io;
         program.uses_heap = self.deps.uses_heap;
         program.uses_strings = self.deps.uses_strings;
-        program.uses_math = self.deps.uses_math;
         program.uses_args = self.deps.uses_args;
     }
     
@@ -179,6 +178,7 @@ impl Analyzer {
             }
             
             Statement::FunctionCall { name, args } => {
+                self.deps.uses_funcs = true; // Track that functions are used
                 if !self.functions.contains(name) {
                     let mut err = format!("Unknown function: {}", name);
                     if let Some(suggestion) = find_similar_keyword(name, ENGLISH_KEYWORDS) {
@@ -193,6 +193,7 @@ impl Analyzer {
             
             Statement::FunctionDef { name, params, body, .. } => {
                 self.functions.insert(name.clone());
+                self.deps.uses_funcs = true; // Track that functions are used
                 // Add function parameters to scope
                 for (param_name, _) in params {
                     self.variables.insert(param_name.clone());
@@ -328,13 +329,10 @@ impl Analyzer {
     
     fn analyze_expr(&mut self, expr: &Expr) {
         match expr {
-            Expr::BinaryOp { left, op, right } => {
+            Expr::BinaryOp { left, op: _, right } => {
                 self.analyze_expr(left);
                 self.analyze_expr(right);
                 
-                if matches!(op, BinaryOperator::Divide | BinaryOperator::Modulo) {
-                    self.deps.uses_math = true;
-                }
             }
             
             Expr::UnaryOp { operand, .. } => {
@@ -348,10 +346,10 @@ impl Analyzer {
             
             Expr::PropertyCheck { value, .. } => {
                 self.analyze_expr(value);
-                self.deps.uses_math = true;
             }
             
             Expr::FunctionCall { name, args } => {
+                self.deps.uses_funcs = true; // Track that functions are used
                 if !self.functions.contains(name) {
                     let mut err = format!("Unknown function: {}", name);
                     if let Some(suggestion) = find_similar_keyword(name, ENGLISH_KEYWORDS) {
@@ -378,6 +376,26 @@ impl Analyzer {
             
             Expr::StringLit(_) => {
                 self.deps.uses_strings = true;
+            }
+            
+            Expr::FormatString { parts } => {
+                self.deps.uses_strings = true;
+                for part in parts {
+                    match part {
+                        FormatPart::Expression { expr, .. } => {
+                            self.analyze_expr(expr);
+                        }
+                        FormatPart::Variable { name, .. } => {
+                            self.track_identifier(name);
+                            if !self.variables.contains(name) && name != "_iter" {
+                                if find_similar_keyword(name, ENGLISH_KEYWORDS).is_none() {
+                                    self.errors.push(format!("Unknown variable: {}", name));
+                                }
+                            }
+                        }
+                        FormatPart::Literal(_) => {}
+                    }
+                }
             }
             
             Expr::Identifier(name) => {

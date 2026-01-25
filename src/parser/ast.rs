@@ -147,6 +147,7 @@ pub enum Expr {
 pub enum FormatPart {
     Literal(String),
     Variable { name: String, format: Option<String> },
+    Expression { expr: Box<Expr>, format: Option<String> },
 }
 
 #[derive(Debug, Clone)]
@@ -415,7 +416,6 @@ pub struct Program {
     pub uses_heap: bool,
     pub uses_strings: bool,
     pub uses_io: bool,
-    pub uses_math: bool,
     pub uses_args: bool,
 }
 
@@ -426,7 +426,6 @@ impl Program {
             uses_heap: false,
             uses_strings: false,
             uses_io: false,
-            uses_math: false,
             uses_args: false,
         }
     }
