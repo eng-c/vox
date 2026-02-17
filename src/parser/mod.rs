@@ -38,6 +38,36 @@ mod file_line_read_and_seek_tests {
     }
 
     #[test]
+    fn test_parse_read_line_statement_with_optional_article_before_buffer() {
+        let input = r#"Read line from source into the linebuf."#;
+        let result = parse_input(input).expect("read line with optional article before buffer should parse");
+        assert_eq!(result.statements.len(), 1);
+
+        match &result.statements[0] {
+            Statement::FileReadLine { source, buffer } => {
+                assert_eq!(source, "source");
+                assert_eq!(buffer, "linebuf");
+            }
+            other => panic!("Expected FileReadLine, got {:?}", other),
+        }
+    }
+
+    #[test]
+    fn test_parse_read_line_statement_with_optional_article_before_source() {
+        let input = r#"Read line from the source into linebuf."#;
+        let result = parse_input(input).expect("read line with optional article should parse");
+        assert_eq!(result.statements.len(), 1);
+
+        match &result.statements[0] {
+            Statement::FileReadLine { source, buffer } => {
+                assert_eq!(source, "source");
+                assert_eq!(buffer, "linebuf");
+            }
+            other => panic!("Expected FileReadLine, got {:?}", other),
+        }
+    }
+
+    #[test]
     fn test_parse_seek_line_statement() {
         let input = r#"Seek source to line 1."#;
         let result = parse_input(input).expect("seek line should parse");
@@ -1803,7 +1833,15 @@ impl Parser {
             } else {
                 // Parse remaining statements in the sentence
                 loop {
-                    if matches!(self.current(), Token::Period | Token::EOF | Token::ParagraphBreak) {
+                    if matches!(self.current(), Token::EOF) {
+                        break;
+                    }
+                    if *self.current() == Token::ParagraphBreak {
+                        self.advance();
+                        self.skip_noise();
+                        continue;
+                    }
+                    if *self.current() == Token::Period {
                         break;
                     }
                     
@@ -1814,8 +1852,14 @@ impl Parser {
                     if *self.current() == Token::Comma {
                         self.advance();
                         self.skip_noise();
-                    } else {
-                        break;
+                        // Paragraph breaks are visual spacing and may appear after commas.
+                        while *self.current() == Token::ParagraphBreak {
+                            self.advance();
+                            self.skip_noise();
+                        }
+                    } else if *self.current() == Token::ParagraphBreak {
+                        self.advance();
+                        self.skip_noise();
                     }
                 }
             }
@@ -1868,6 +1912,12 @@ impl Parser {
             return Err(self.err_expected(expected, self.current()));
         }
         self.skip_noise();
+
+        // Optional article before source handle/path: "from the source"
+        if matches!(self.current(), Token::The | Token::A | Token::An) {
+            self.advance();
+            self.skip_noise();
+        }
         
         // Parse source: "standard input" or file name
         let source = if *self.current() == Token::Standard {
@@ -1891,6 +1941,12 @@ impl Parser {
             return Err(self.err_expected("'into' after read source", self.current()));
         }
         self.skip_noise();
+
+        // Optional article before destination buffer: "into the content"
+        if matches!(self.current(), Token::The | Token::A | Token::An) {
+            self.advance();
+            self.skip_noise();
+        }
         
         // Get buffer name
         let buffer = match self.current().clone() {
