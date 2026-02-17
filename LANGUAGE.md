@@ -1,6 +1,6 @@
 # EC Language Specification
 
-**Version 0.1.2**
+**Version 0.1.3**
 
 This document defines the syntax and semantics of EC (sentence based code).
 
