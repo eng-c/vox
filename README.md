@@ -1,32 +1,32 @@
-# EC
+# Vox
 
 ![Open issues](https://img.shields.io/github/issues/eng-c/ec?style=flat-square)
 ![Repo size](https://img.shields.io/github/repo-size/eng-c/ec?style=flat-square)
 ![Last commit](https://img.shields.io/github/last-commit/eng-c/ec?style=flat-square)
 ![GPLv3 license](https://img.shields.io/badge/License-GPLv3-blue.svg)
 
-**EC** is a minimal systems compiler that translates a constrained, sentence-based English syntax directly into native x86_64 assembly — without a **resident runtime system**, virtual machine, or standard library.
+**Vox** is a minimal systems compiler that translates a constrained, sentence-based English syntax directly into native x86_64 assembly — without a **resident runtime system**, virtual machine, or standard library.
 
 The generated binaries consist solely of application code and direct system calls, with no background services, schedulers, garbage collectors, or support libraries.
 
-EC is an experiment in compiler design, language ergonomics, and low-level systems programming, focused on producing predictable, memory-safe, and extremely small executables.
+Vox is an experiment in compiler design, language ergonomics, and low-level systems programming, focused on producing predictable, memory-safe, and extremely small executables.
 
 ---
 
 ## Motivation
 
-EC explores how far a human-readable, deterministic syntax can be lowered *directly* to native assembly while preserving the kinds of guarantees typically associated with modern systems languages.
+Vox explores how far a human-readable, deterministic syntax can be lowered *directly* to native assembly while preserving the kinds of guarantees typically associated with modern systems languages.
 
 The project is intentionally minimal:
 there is no libc, no garbage collector, and no hidden runtime system. All abstractions are resolved at compile time, and the generated code consists of straightforward NASM assembly and direct system calls.
 
-Rather than hiding system behavior, EC aims to make it explicit — just expressed in a readable form.
+Rather than hiding system behavior, Vox aims to make it explicit — just expressed in a readable form.
 
 ---
 
 ## Language Model
 
-EC does **not** attempt free-form natural language understanding.
+Vox does **not** attempt free-form natural language understanding.
 
 Instead, it uses a constrained, sentence-based grammar designed to remain readable while compiling deterministically. Every construct maps directly to well-defined compiler behavior, with no ambiguity or dynamic interpretation.
 
@@ -39,7 +39,7 @@ For a complete description of the grammar and semantics, see
 
 ## Memory Safety Model
 
-Memory safety in EC is achieved without garbage collection, heap tracing, or runtime supervision.  
+Memory safety in Vox is achieved without garbage collection, heap tracing, or runtime supervision.  
 All safety guarantees are enforced through compile-time structure and **local, inline checks** emitted directly into the generated assembly.
 
 ### Pointer Abstraction
@@ -74,15 +74,15 @@ All tracked resources are:
 
 This cleanup is deterministic and non-allocating, and does not involve object tracing or liveness analysis. It is equivalent to explicit teardown code written manually in low-level systems programs.
 
-While EC does not replicate Rust’s type system, it aims for a similar *practical outcome*: predictable, memory-safe programs without a garbage collector or runtime system.
+While Vox does not replicate Rust’s type system, it aims for a similar *practical outcome*: predictable, memory-safe programs without a garbage collector or runtime system.
 
 ---
 
 ## Minimal Executables
 
-Because EC compiles directly to simple assembly and avoids a runtime system or standard library, the resulting executables are extremely small.
+Because Vox compiles directly to simple assembly and avoids a runtime system or standard library, the resulting executables are extremely small.
 
-This makes EC well-suited for static utilities, constrained environments, and systems-level tooling where predictability and size matter more than abstraction depth.
+This makes Vox well-suited for static utilities, constrained environments, and systems-level tooling where predictability and size matter more than abstraction depth.
 
 ---
 
@@ -99,7 +99,7 @@ This makes EC well-suited for static utilities, constrained environments, and sy
 
 ## Example Program
 
-Below is a complete EC program reimplementing the Unix `cat` utility.
+Below is a complete Vox program reimplementing the Unix `cat` utility.
 
 This example demonstrates:
 - File I/O
@@ -209,7 +209,7 @@ ec example.en
 
 ## Roadmap
 
-EC is under active development. Planned work includes:
+Vox is under active development. Planned work includes:
 
 1. **Shared Libraries**
    Versioned shared libraries with explicit naming, symbol scoping, and backward compatibility guarantees.
@@ -243,6 +243,6 @@ EC is under active development. Planned work includes:
 
 ## Status
 
-EC is experimental but functional.
+Vox is experimental but functional.
 Core language features are implemented and exercised by real programs, with additional capabilities under active development.
 

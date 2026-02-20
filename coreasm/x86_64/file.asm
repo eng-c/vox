@@ -1,4 +1,4 @@
-; file.asm - File I/O macros for English Compiler
+; file.asm - File I/O macros for Vox Compiler
 ; Provides file operations: open, read, write, close, delete, exists
 
 ; Linux x86_64 syscall numbers

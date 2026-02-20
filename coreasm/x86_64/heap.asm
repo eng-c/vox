@@ -1,4 +1,4 @@
-; heap.asm - Heap memory management for English Compiler
+; heap.asm - Heap memory management for Vox Compiler
 
 section .bss
     alloc_table: resq 256

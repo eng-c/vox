@@ -1,4 +1,4 @@
-; binary.asm - Bitwise operations and byte access macros for English Compiler
+; binary.asm - Bitwise operations and byte access macros for Vox Compiler
 ; Provides: bitwise ops, byte read/write, bounds checking
 
 section .data

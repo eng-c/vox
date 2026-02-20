@@ -1,4 +1,4 @@
-; float.asm - Floating point operations for English Compiler
+; float.asm - Floating point operations for Vox Compiler
 ; Uses SSE2 instructions (available on all x86-64 CPUs)
 
 section .text

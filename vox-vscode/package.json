@@ -1,105 +1,106 @@
 {
-  "name": "ec",
-  "displayName": "EC",
-  "description": "Syntax highlighting for EC (sentence based code) (.en files)",
-  "version": "0.1.0",
-  "publisher": "Josjuar Lister",
+  "name": "vox",
+  "displayName": "Vox",
+  "description": "Syntax highlighting for Vox (sentence based code) (.en files)",
+  "version": "0.1.1",
+  "publisher": "vox",
   "engines": {
-    "vscode": "^1.60.0"
+    "vscode": "^1.75.0"
   },
+  "readme": "README.md",
   "categories": [
     "Programming Languages"
   ],
   "contributes": {
     "languages": [
       {
-        "id": "ec",
-        "aliases": ["EC", "ec", "English", "english", "en"],
-        "extensions": [".en", ".eng"],
+        "id": "vox",
+        "aliases": ["Vox", "vox", "English", "english", "en"],
+        "extensions": [".en", ".eng", ".vox", ".vx"],
         "configuration": "./language-configuration.json"
       }
     ],
     "grammars": [
       {
-        "language": "ec",
-        "scopeName": "source.ec",
-        "path": "./syntaxes/english.tmLanguage.json"
+        "language": "vox",
+        "scopeName": "source.vox",
+        "path": "./syntaxes/vox.tmLanguage.json"
       }
     ],
     "configurationDefaults": {
       "editor.tokenColorCustomizations": {
         "textMateRules": [
           {
-            "scope": "entity.name.tag.each.ec",
+            "scope": "entity.name.tag.each.vox",
             "settings": {
               "foreground": "#4EC9B0",
               "fontStyle": "bold"
             }
           },
           {
-            "scope": "support.type.ec",
+            "scope": "support.type.vox",
             "settings": {
               "foreground": "#FF79C6",
               "fontStyle": "bold"
             }
           },
           {
-            "scope": "entity.name.function.definition.ec",
+            "scope": "entity.name.function.definition.vox",
             "settings": {
               "foreground": "#DCDCAA",
               "fontStyle": "bold"
             }
           },
           {
-            "scope": "entity.name.function.call.ec",
+            "scope": "entity.name.function.call.vox",
             "settings": {
               "foreground": "#DCDCAA"
             }
           },
           {
-            "scope": "punctuation.definition.ec",
+            "scope": "punctuation.definition.vox",
             "settings": {
               "foreground": "#56abd3"
             }
           },
           {
-            "scope": "storage.type.ec",
+            "scope": "storage.type.vox",
             "settings": {
               "foreground": "#4EC9B0"
             }
           },
           {
-            "scope": "keyword.control.ec",
+            "scope": "keyword.control.vox",
             "settings": {
               "foreground": "#C586C0"
             }
           },
           {
-            "scope": "keyword.other.ec",
+            "scope": "keyword.other.vox",
             "settings": {
               "foreground": "#C586C0"
             }
           },
           {
-            "scope": "keyword.operator.ec",
+            "scope": "keyword.operator.vox",
             "settings": {
               "foreground": "#ebe6be"
             }
           },
           {
-            "scope": "constant.language.boolean.ec",
+            "scope": "constant.language.boolean.vox",
             "settings": {
               "foreground": "#569CD6"
             }
           },
           {
-            "scope": "support.function.ec",
+            "scope": "support.function.vox",
             "settings": {
               "foreground": "#b0dcaa"
             }
           },
           {
-            "scope": "variable.other.interpolation.ec",
+            "scope": "variable.other.interpolation.vox",
             "settings": {
               "foreground": "#F1FA8C",
               "fontStyle": "bold"
@@ -111,7 +112,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/your-username/ec"
+    "url": "https://github.com/eng-c/ec"
   },
   "license": "MIT"
 }

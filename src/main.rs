@@ -19,8 +19,8 @@ use codegen::CodeGenerator;
 
 /// Find the coreasm library directory using industry-standard resolution order:
 /// 1. EC_CORE_PATH environment variable (user override)
-/// 2. XDG config file (~/.config/ec/config)
-/// 3. System paths (/usr/local/share/ec, /usr/share/ec)
+/// 2. XDG config file (~/.config/vox/config)
+/// 3. System paths (/usr/local/share/vox, /usr/share/vox)
 /// 4. Executable-relative paths (for portable installs)
 /// 5. Current working directory fallback (for development)
 fn find_coreasm_path() -> Option<PathBuf> {
@@ -37,7 +37,7 @@ fn find_coreasm_path() -> Option<PathBuf> {
         }
     }
     
-    // 2. XDG config file (~/.config/ec/config)
+    // 2. XDG config file (~/.config/vox/config)
     if let Some(config_path) = get_config_lib_path() {
         if config_path.exists() {
             return Some(config_path);
@@ -46,9 +46,9 @@ fn find_coreasm_path() -> Option<PathBuf> {
     
     // 3. System paths (Unix standard locations)
     let system_paths = [
-        "/usr/local/share/ec/coreasm",
-        "/usr/share/ec/coreasm",
-        "/opt/ec/coreasm",
+        "/usr/local/share/vox/coreasm",
+        "/usr/share/vox/coreasm",
+        "/opt/vox/coreasm",
     ];
     for path in &system_paths {
         let p = PathBuf::from(path);
@@ -80,7 +80,7 @@ fn find_coreasm_path() -> Option<PathBuf> {
 
 /// Read lib_path from XDG config file
 fn get_config_lib_path() -> Option<PathBuf> {
-    // XDG Base Directory: ~/.config/ec/config
+    // XDG Base Directory: ~/.config/vox/config
     let config_dir = env::var("XDG_CONFIG_HOME")
         .map(PathBuf::from)
         .unwrap_or_else(|_| {
@@ -131,7 +131,7 @@ fn process_includes(
                 PathBuf::from(path)
             } else {
                 // Check system library path first
-                let system_path = PathBuf::from("/usr/share/ec/lib").join(path);
+                let system_path = PathBuf::from("/usr/share/vox/lib").join(path);
                 if system_path.exists() {
                     system_path
                 } else {
@@ -189,11 +189,11 @@ fn process_includes(
 }
 
 fn show_version() {
-    eprintln!("ec v{} By Josjuar Lister 2026", env!("CARGO_PKG_VERSION"));
+    eprintln!("vox v{} By Josjuar Lister 2026", env!("CARGO_PKG_VERSION"));
 }
 
 fn show_help() {
-    eprintln!("Usage: ec <source.en> [options]");
+    eprintln!("Usage: vox <source.en> [options]");
     eprintln!();
     eprintln!("Options:");
     eprintln!("  --emit-asm       Output assembly only (don't assemble/link)");
@@ -374,7 +374,7 @@ fn main() {
             }
         }
         None => {
-            eprintln!("Warning: coreasm library not found. Set EC_CORE_PATH or install to /usr/local/share/ec/");
+            eprintln!("Warning: coreasm library not found. Set EC_CORE_PATH or install to /usr/local/share/vox/");
             "-I./".to_string()
         }
     };

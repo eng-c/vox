@@ -1,4 +1,4 @@
-; time.asm - Time and sleep macros for English Compiler
+; time.asm - Time and sleep macros for Vox Compiler
 ; Provides time operations: get time, sleep, precise timing, timers, date components
 
 ; Linux x86_64 syscall numbers

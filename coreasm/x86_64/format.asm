@@ -1,4 +1,4 @@
-; format.asm - Format string macros for English Compiler
+; format.asm - Format string macros for Vox Compiler
 ; Provides: number formatting (hex, binary, octal), padding, precision
 
 section .data

@@ -1,4 +1,4 @@
-; args.asm - Command-line arguments and environment variables for English Compiler
+; args.asm - Command-line arguments and environment variables for Vox Compiler
 ; 
 ; At program start (before _start prologue), the stack contains:
 ;   [rsp]       = argc (argument count)

@@ -1,4 +1,4 @@
-; int.asm - Integer operations for English Compiler
+; int.asm - Integer operations for Vox Compiler
 ; x86-64 implementation
 
 section .text
