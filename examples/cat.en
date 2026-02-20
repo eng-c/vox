@@ -1,4 +1,4 @@
-(reimplementation of core utils CAT command in ec)
+(reimplementation of core utils CAT command in vox)
 
 A text called "Program Version" is "0.1.5".
 
@@ -18,7 +18,7 @@ Parse Flags.
 
 To "show version".
   A text called "Program" is arguments's name.
-  Print "{Program} (ec) {Program Version} by Josjuar Lister".
+  Print "{Program} (vox) {Program Version} by Josjuar Lister".
   Exit 0.
 
 If "wants help" then,

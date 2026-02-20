@@ -1,8 +1,8 @@
-# EC Language Specification
+# Vox Language Specification
 
 **Version 0.1.5**
 
-This document defines the syntax and semantics of EC (sentence based code).
+This document defines the syntax and semantics of Vox (sentence based code).
 
 ---
 
@@ -1405,7 +1405,7 @@ If condition is true then,
 
 #### Safety vs C Comparison
 
-| Issue | C Behavior | EC Behavior |
+| Issue | C Behavior | Vox Behavior |
 |-------|------------|-------------|
 | Buffer overflow | Undefined behavior, security vulnerability | Impossible - buffers auto-grow |
 | Forgot to close file | Resource leak | Auto-closed on exit |
@@ -1634,7 +1634,7 @@ a text called "arg" is the argument at the i.
 
 ### Declarative Flag Parsing
 
-EC supports declarative CLI flag parsing with a schema-first style.
+Vox supports declarative CLI flag parsing with a schema-first style.
 
 #### 1) Declare a flag schema
 
@@ -1672,7 +1672,7 @@ You can parse flags explicitly:
 Parse flags.
 ```
 
-Or omit it. If omitted, EC inserts parsing automatically **immediately after the last flag schema declaration**.
+Or omit it. If omitted, Vox inserts parsing automatically **immediately after the last flag schema declaration**.
 
 #### 4) Placement rules
 
@@ -2005,7 +2005,7 @@ see "math" version "1.0" from "./libraries/math.so".
 
 **Search paths:**
 1. Relative to current file (`./` or `../`)
-2. System library path (`/usr/share/ec/lib/`)
+2. System library path (`/usr/share/vox/lib/`)
 
 **Circular dependencies:** The compiler tracks included files and automatically skips files that have already been included.
 
@@ -2041,7 +2041,7 @@ print result.
 ### Basic Usage
 
 ```bash
-ec <source.en> [options]
+vox <source.en> [options]
 ```
 
 ### Options
@@ -2060,16 +2060,16 @@ ec <source.en> [options]
 
 ```bash
 # Compile and run
-ec hello.en --run
+vox hello.en --run
 
 # Build executable with custom name
-ec hello.en -o myprogram
+vox hello.en -o myprogram
 
 # Build shared library
-ec math.en --shared
+vox math.en --shared
 
 # Link against shared library
-ec main.en --link libmath --lib-path ./libs
+vox main.en --link libmath --lib-path ./libs
 ```
 
 ---

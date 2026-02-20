@@ -1,7 +1,7 @@
 #!/bin/bash
 #
-# EC Extension Auto-Setup Script
-# Automatically installs the EC syntax highlighting extension for your IDE
+# Vox Extension Auto-Setup Script
+# Automatically installs the Vox syntax highlighting extension for your IDE
 #
 
 set -e
@@ -20,7 +20,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 echo -e "${CYAN}${BOLD}"
 echo "╔═══════════════════════════════════════════════════════════╗"
-echo "║           EC Extension Setup Script                       ║"
+echo "║           Vox Extension Setup Script                      ║"
 echo "║     Syntax highlighting for sentence-based code           ║"
 echo "╚═══════════════════════════════════════════════════════════╝"
 echo -e "${NC}"
@@ -129,7 +129,7 @@ find_ides() {
 install_for_ide() {
     local ide_name="$1"
     local ext_dir="$2"
-    local target="$ext_dir/ec"
+    local target="$ext_dir/vox"
     
     echo -e "\n${BLUE}Installing for ${BOLD}$ide_name${NC}${BLUE}...${NC}"
     
@@ -169,7 +169,7 @@ install_for_ide() {
 
 # Main installation
 install_extension() {
-    echo -e "\n${BLUE}${BOLD}Installing EC extension...${NC}"
+    echo -e "\n${BLUE}${BOLD}Installing Vox extension...${NC}"
     
     local installed=0
     
@@ -186,27 +186,27 @@ install_extension() {
         echo -e "${GREEN}${BOLD}═══════════════════════════════════════════════════════════${NC}"
         echo -e "\n${CYAN}Next steps:${NC}"
         echo "  1. Reload your IDE window (Ctrl+Shift+P → 'Reload Window')"
-        echo "  2. Open any .en file"
-        echo "  3. The language mode should automatically be 'EC'"
+        echo "  2. Open any .vox file"
+        echo "  3. The language mode should automatically be 'Vox'"
         echo ""
         echo -e "${CYAN}If highlighting doesn't appear:${NC}"
         echo "  - Click the language mode in the bottom-right corner"
-        echo "  - Select 'EC' or 'English' from the list"
+        echo "  - Select 'Vox' or 'English' from the list"
         echo ""
         echo -e "${CYAN}To test the compiler:${NC}"
         echo "  cd $(dirname "$SCRIPT_DIR")"
         echo "  cargo build --release"
-        echo "  ./target/release/ec examples/hello.en --run"
+        echo "  ./target/release/vox examples/hello.vox --run"
         echo ""
     fi
 }
 
 # Uninstall option
 uninstall_extension() {
-    echo -e "\n${BLUE}${BOLD}Uninstalling EC extension...${NC}"
+    echo -e "\n${BLUE}${BOLD}Uninstalling Vox extension...${NC}"
     
     for ide in "${!IDE_PATHS[@]}"; do
-        local target="${IDE_PATHS[$ide]}/ec"
+        local target="${IDE_PATHS[$ide]}/vox"
         if [ -L "$target" ] || [ -d "$target" ]; then
             rm -rf "$target"
             echo -e "  ${GREEN}✓${NC} Removed from $ide"
@@ -232,7 +232,7 @@ show_help() {
 show_status() {
     find_ides  # Detect IDEs first
     
-    echo -e "\n${BLUE}${BOLD}EC Extension Status${NC}"
+    echo -e "\n${BLUE}${BOLD}Vox Extension Status${NC}"
     echo ""
     
     if [ ${#IDE_FOUND[@]} -eq 0 ]; then
@@ -243,7 +243,7 @@ show_status() {
     
     for ide in "${!IDE_FOUND[@]}"; do
         local ext_dir="${IDE_PATHS[$ide]}"
-        local target="$ext_dir/ec"
+        local target="$ext_dir/vox"
         
         if [ -L "$target" ]; then
             local link_target=$(readlink "$target")

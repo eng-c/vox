@@ -1,4 +1,4 @@
-; list.asm - List element access macros for English Compiler
+; list.asm - List element access macros for Vox Compiler
 ; Provides: element access by index (1-based), bounds checking
 
 section .data

@@ -2,13 +2,13 @@ SHELL := /bin/bash
 
 PREFIX ?= /usr/local
 BINDIR := $(PREFIX)/bin
-DATADIR := $(PREFIX)/share/ec
+DATADIR := $(PREFIX)/share/vox
 COREDIR := $(DATADIR)/coreasm
 
 # Default target architecture (host architecture)
 TARGET_ARCH := $(shell uname -m)
 
-BIN := ec
+BIN := vox
 RELEASE_PATH := target/release
 RELEASE_BIN := $(RELEASE_PATH)/$(BIN)
 

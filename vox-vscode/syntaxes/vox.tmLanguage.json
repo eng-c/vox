@@ -1,7 +1,7 @@
 {
   "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
-  "name": "EC",
-  "scopeName": "source.ec",
+  "name": "Vox",
+  "scopeName": "source.vox",
   "patterns": [
     { "include": "#comments" },
     { "include": "#function-definition" },
@@ -21,7 +21,7 @@
   ],
   "repository": {
     "comments": {
-      "name": "comment.block.ec",
+      "name": "comment.block.vox",
       "begin": "\\(",
       "end": "\\)",
       "patterns": [
@@ -31,32 +31,32 @@
     "function-definition": {
       "match": "\\b(To)\\s+(\"[^\"]+\")",
       "captures": {
-        "1": { "name": "storage.type.function.ec" },
-        "2": { "name": "entity.name.function.definition.ec" }
+        "1": { "name": "storage.type.function.vox" },
+        "2": { "name": "entity.name.function.definition.vox" }
       }
     },
     "function-call": {
       "match": "(\"[^\"]+\")\\s+(of|on)\\b",
       "captures": {
-        "1": { "name": "entity.name.function.call.ec" },
-        "2": { "name": "punctuation.accessor.ec" }
+        "1": { "name": "entity.name.function.call.vox" },
+        "2": { "name": "punctuation.accessor.vox" }
       }
     },
     "strings": {
-      "name": "string.quoted.double.ec",
+      "name": "string.quoted.double.vox",
       "begin": "\"",
       "end": "\"",
       "patterns": [
         {
           "match": "(?<!\\{)(\\{)(?!\\{)([^}]*?)(?<!\\})(\\})(?!\\})",
           "captures": {
-            "1": { "name": "punctuation.section.interpolation.begin.ec" },
-            "2": { "name": "variable.other.interpolation.ec" },
-            "3": { "name": "punctuation.section.interpolation.end.ec" }
+            "1": { "name": "punctuation.section.interpolation.begin.vox" },
+            "2": { "name": "variable.other.interpolation.vox" },
+            "3": { "name": "punctuation.section.interpolation.end.vox" }
           }
         },
         {
-          "name": "constant.character.escape.ec",
+          "name": "constant.character.escape.vox",
           "match": "\\\\."
         }
       ]
@@ -64,56 +64,56 @@
     "loop-expansion": {
       "comment": "Parameter loop expansion: 'each X from Y' - uses entity.name.tag for distinct blue color",
       "match": "\\b(each)\\b",
-      "name": "entity.name.tag.each.ec"
+      "name": "entity.name.tag.each.vox"
     },
     "conditional-branch": {
       "comment": "Conditional branching: 'but' keyword - uses support.type for distinct teal/cyan color",
       "match": "\\b(but)\\b",
-      "name": "support.type.ec"
+      "name": "support.type.vox"
     },
     "control-keywords": {
-      "name": "keyword.control.ec",
+      "name": "keyword.control.vox",
       "match": "\\b(If|if|then|Otherwise|Else|else|While|while|For|for|from|to|Return|return|Exit|exit|Break|break|Continue|continue|Repeat|repeat|times)\\b"
     },
     "action-keywords": {
-      "name": "keyword.other.ec",
+      "name": "keyword.other.vox",
       "match": "\\b(Print|print|Set|set|Create|create|Increment|Decrement|increment|decrement|is|are|was|treating|as|enable|disable|error|catching)\\b"
     },
     "io-keywords": {
-      "name": "support.function.ec",
+      "name": "support.function.vox",
       "match": "\\b(Open|open|Close|close|Read|read|Write|write|Delete|delete|Resize|resize|reading|writing|appending)\\b"
     },
     "types": {
-      "name": "storage.type.ec",
+      "name": "storage.type.vox",
       "match": "\\b(number|text|boolean|buffer|file|float|list|newline)\\b"
     },
     "operators": {
-      "name": "keyword.operator.ec",
+      "name": "keyword.operator.vox",
       "match": "\\b(add|subtract|multiply|divide|modulo|plus|minus|greater|less|equal|than|and|or|not)\\b"
     },
     "properties": {
       "match": "('s)\\s*(capacity|size|absolute|sign|even|odd|positive|negative|descriptor|modified|permissions|all|count|first|last)",
       "captures": {
-        "1": { "name": "punctuation.accessor.ec" },
-        "2": { "name": "variable.other.property.ec" }
+        "1": { "name": "punctuation.accessor.vox" },
+        "2": { "name": "variable.other.property.vox" }
       }
     },
     "articles": {
-      "name": "punctuation.definition.ec",
-      "match": "\\b(a|an|the|called|with|of|on|at|into|for|in|bytes|size)\\b"
+      "name": "punctuation.definition.vox",
+      "match": "\\b(?i:(a|an|the|called|with|of|on|at|into|for|in|bytes|size))\\b"
     },
     "booleans": {
-      "name": "constant.language.boolean.ec",
+      "name": "constant.language.boolean.vox",
       "match": "\\b(true|false)\\b"
     },
     "numbers": {
       "patterns": [
         {
-          "name": "constant.numeric.float.ec",
+          "name": "constant.numeric.float.vox",
           "match": "-?\\b\\d+\\.\\d+\\b"
         },
         {
-          "name": "constant.numeric.integer.ec",
+          "name": "constant.numeric.integer.vox",
           "match": "-?\\b\\d+\\b"
         }
       ]

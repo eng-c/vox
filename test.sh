@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# ec test runner - pytest-style testing for the English compiler
+# vox test runner - pytest-style testing for the English compiler
 #
 # Usage:
 #   ./test.sh              Run all tests
@@ -61,12 +61,12 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-# Get script directory (where ec project lives)
+# Get script directory (where vox project lives)
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-EC_BIN="$SCRIPT_DIR/target/release/ec"
+VOX_BIN="$SCRIPT_DIR/target/release/vox"
 
 # Build compiler if needed
-echo -e "${BLUE}${BOLD}=== ec test runner ===${NC}"
+echo -e "${BLUE}${BOLD}=== vox test runner ===${NC}"
 echo ""
 
 echo -e "${YELLOW}Building compiler...${NC}"
@@ -113,7 +113,7 @@ run_test() {
     # Compile then run the produced executable so we can pass runtime args
     local actual_exit=0
     local exe_path="$SCRIPT_DIR/$basename"
-    "$EC_BIN" "$test_file" > "$tmp_err" 2>&1 || actual_exit=$?
+    "$VOX_BIN" "$test_file" > "$tmp_err" 2>&1 || actual_exit=$?
 
     if [[ "$actual_exit" == "0" ]]; then
         "$exe_path" "${run_args[@]}" > "$tmp_out" 2>> "$tmp_err" || actual_exit=$?

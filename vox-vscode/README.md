@@ -1,8 +1,8 @@
-# EC - VSCode Extension
+# Vox - VSCode Extension
 
-> **Syntax highlighting for EC (sentence based code)**
+> **Syntax highlighting for Vox (sentence based code)**
 
-EC is a systems-level programming language with natural language syntax. This extension provides rich syntax highlighting for `.en` and `.eng` files.
+Vox is a systems-level programming language with natural language syntax. This extension provides rich syntax highlighting for `.vx`, `.vox`, `.en` and `.eng` files.
 
 ## Quick Setup
 
@@ -15,12 +15,12 @@ Or see [Manual Installation](#installation-before-marketplace-release) below.
 
 ## Features
 
-- **Full syntax highlighting** for all EC language constructs
+- **Full syntax highlighting** for all Vox language constructs
 - **Comment support** — parenthetical comments `(like this)` with nesting
 - **Auto-closing pairs** for brackets, parentheses, and quotes
 - **Code folding** for function definitions
 - **Format string interpolation** — `{variable}` inside strings gets distinct highlighting
-- **Special highlighting** for unique EC constructs:
+- **Special highlighting** for unique Vox constructs:
   - `each` (loop expansion) — teal + bold
   - `but` (conditional branching) — pink + bold
 
@@ -53,29 +53,29 @@ Or see [Manual Installation](#installation-before-marketplace-release) below.
 **Linux/macOS:**
 ```bash
 # For VSCode
-ln -s /path/to/ec/ec-vscode ~/.vscode/extensions/ec
+ln -s /path/to/vox/vox-vscode ~/.vscode/extensions/vox
 
 # For Windsurf
-ln -s /path/to/ec/ec-vscode ~/.windsurf/extensions/ec
+ln -s /path/to/vox/vox-vscode ~/.windsurf/extensions/vox
 
 # For Cursor
-ln -s /path/to/ec/ec-vscode ~/.cursor/extensions/ec
+ln -s /path/to/vox/vox-vscode ~/.cursor/extensions/vox
 ```
 
 **Windows (PowerShell as Admin):**
 ```powershell
 # For VSCode
-New-Item -ItemType SymbolicLink -Path "$env:USERPROFILE\.vscode\extensions\ec" -Target "C:\path\to\ec\ec-vscode"
+New-Item -ItemType SymbolicLink -Path "$env:USERPROFILE\.vscode\extensions\vox" -Target "C:\path\to\vox\vox-vscode"
 
 # For Windsurf
-New-Item -ItemType SymbolicLink -Path "$env:USERPROFILE\.windsurf\extensions\ec" -Target "C:\path\to\ec\ec-vscode"
+New-Item -ItemType SymbolicLink -Path "$env:USERPROFILE\.windsurf\extensions\vox" -Target "C:\path\to\vox\vox-vscode"
 ```
 
 Then **reload your editor** (`Ctrl+Shift+P` → "Reload Window").
 
 ### Option 2: Copy the Folder
 
-Simply copy the `ec-vscode` folder to your extensions directory:
+Simply copy the `vox-vscode` folder to your extensions directory:
 
 | Editor | Extensions Directory |
 |--------|---------------------|
@@ -85,7 +85,7 @@ Simply copy the `ec-vscode` folder to your extensions directory:
 | Windsurf | `~/.windsurf/extensions/` |
 | Cursor | `~/.cursor/extensions/` |
 
-Rename the copied folder to `ec`.
+Rename the copied folder to `vox`.
 
 ### Option 3: Build and Install VSIX Package
 
@@ -94,24 +94,24 @@ Rename the copied folder to `ec`.
 npm install -g @vscode/vsce
 
 # Navigate to extension directory
-cd ec-vscode
+cd vox-vscode
 
 # Package the extension
 vsce package
 
 # Install the generated .vsix file
-code --install-extension ec-0.1.0.vsix
+code --install-extension vox-0.1.0.vsix
 # Or for Windsurf:
-windsurf --install-extension ec-0.1.0.vsix
+windsurf --install-extension vox-0.1.0.vsix
 ```
 
 ---
 
 ## Verifying Installation
 
-1. Open any `.en` file
-2. Check the language mode in the bottom-right corner of the editor - it should say "EC"
-3. If it says "Plain Text", click it and select "EC" from the list
+1. Open any `.vox` file
+2. Check the language mode in the bottom-right corner of the editor - it should say "Vox"
+3. If it says "Plain Text", click it and select "Vox" from the list
 
 ---
 
@@ -120,7 +120,7 @@ windsurf --install-extension ec-0.1.0.vsix
 **Highlighting not working?**
 - Reload the editor window (`Ctrl+Shift+P` → "Reload Window")
 - Check that the extension folder is named correctly in the extensions directory
-- Verify the `.en` file extension is associated with the "EC" language
+- Verify the `.vox` file extension is associated with the "Vox" language
 
 **Colors look different than expected?**
 - The extension provides default colors, but your theme may override them
@@ -131,7 +131,7 @@ windsurf --install-extension ec-0.1.0.vsix
 ## File Structure
 
 ```
-ec-vscode/
+vox-vscode/
 ├── setup.sh                     # Auto-setup script for new developers
 ├── package.json                 # Extension manifest + color customizations
 ├── language-configuration.json  # Brackets, comments, folding
@@ -144,9 +144,9 @@ ec-vscode/
 
 ## Usage
 
-Once installed, simply open any `.en` or `.eng` file and syntax highlighting will be applied automatically.
+Once installed, simply open any `.vox` or `.en` file and syntax highlighting will be applied automatically.
 
-The language will appear as **"EC"** (or "English") in the language picker.
+The language will appear as **"Vox"** in the language picker.
 
 ## Contributing
 

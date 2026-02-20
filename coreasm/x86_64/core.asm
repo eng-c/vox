@@ -1,4 +1,4 @@
-; core.asm - Core macros for English Compiler
+; core.asm - Core macros for Vox Compiler
 ; Always included - provides essential functionality
 
 ; Global error flag - set by runtime checks (bounds, syscalls, etc.)
